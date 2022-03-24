@@ -14,7 +14,7 @@ pub fn compositor_picture_layer_new(
 }
 
 #[no_mangle]
-pub fn compositor_picture_layer_needs_cache(layer: *mut ValueBox<Arc<PictureLayer>>) -> bool {
+pub fn compositor_picture_layer_needs_cache(layer: *mut ValueBox<Arc<dyn Layer>>) -> bool {
     layer.with_not_null_value_return(false, |layer| {
         let picture_layer = layer
             .any()
