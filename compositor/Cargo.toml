@@ -1,0 +1,8 @@
+[package]
+name = "compositor"
+version = "1.0.0"
+edition = "2021"
+
+[dependencies]
+euclid = "0.22.6"
+ordered-float = "1.1.1"

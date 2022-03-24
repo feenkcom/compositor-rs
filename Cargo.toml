@@ -1,0 +1,20 @@
+[workspace]
+resolver = "2"
+
+members = [
+    "compositor",
+    "compositor-ffi",
+    "compositor-skia",
+    "compositor-skia-ffi"
+]
+
+exclude = [ "target" ]
+
+[profile.dev]
+opt-level = 0
+debug = true
+debug-assertions = true
+overflow-checks = true
+
+[profile.release]
+opt-level = 3

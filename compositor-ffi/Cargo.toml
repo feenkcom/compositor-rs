@@ -1,0 +1,9 @@
+[package]
+name = "compositor-ffi"
+version = "1.0.0"
+edition = "2021"
+
+[dependencies]
+compositor = { path = "../compositor" }
+compositor-skia = { path = "../compositor-skia" }
+boxer = { git = "https://github.com/feenkcom/gtoolkit-boxer", rev = "8ffd345b6aabda55c5ab1b4914f6f3e5f92918d4" }
