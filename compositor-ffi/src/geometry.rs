@@ -2,6 +2,11 @@ use boxer::{ValueBox, ValueBoxPointer, ValueBoxPointerReference};
 use compositor::{Geometry, Path, Rectangle};
 
 #[no_mangle]
+pub fn compositor_geometry_none() -> *mut ValueBox<Geometry> {
+    ValueBox::new(Geometry::None).into_raw()
+}
+
+#[no_mangle]
 pub fn compositor_geometry_new_rectangle(
     left: f32,
     top: f32,
@@ -23,7 +28,7 @@ pub fn compositor_geometry_new_path(mut path: *mut ValueBox<Path>) -> *mut Value
 }
 
 #[no_mangle]
-pub fn compositor_geometry_drop(path: &mut *mut ValueBox<Path>) {
+pub fn compositor_geometry_drop(path: &mut *mut ValueBox<Geometry>) {
     path.drop();
 }
 
