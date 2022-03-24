@@ -1,84 +1,56 @@
+use std::any::Any;
 use std::sync::Arc;
 
-use crate::{Compositor, Layer, Path, Point, Rectangle, RoundedRectangle};
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum Clip {
-    None,
-    Rectangle(Rectangle),
-    RoundedRectangle(RoundedRectangle),
-    Path(Path),
-}
+use crate::{Compositor, Geometry, Layer, Point};
 
 #[derive(Debug, Clone)]
 pub struct ClipLayer {
     layers: Vec<Arc<dyn Layer>>,
     offset: Point,
-    clip: Clip,
+    geometry: Geometry,
 }
 
 impl ClipLayer {
-    fn new() -> Self {
+    pub fn none() -> Self {
         Self {
             layers: vec![],
             offset: Point::zero(),
-            clip: Clip::None,
+            geometry: Geometry::None,
         }
     }
 
-    pub fn rectangle(rectangle: Rectangle, offset: Point) -> Self {
-        let mut layer = Self::new();
-        layer.set_offset(offset);
-        layer.clip_rectangle(rectangle);
-        layer
-    }
-
-    pub fn rounded_rectangle(rounded_rectangle: RoundedRectangle, offset: Point) -> Self {
-        let mut layer = Self::new();
-        layer.set_offset(offset);
-        layer.clip_rounded_rectangle(rounded_rectangle);
-        layer
-    }
-
-    pub fn path(path: Path, offset: Point) -> Self {
-        let mut layer = Self::new();
-        layer.set_offset(offset);
-        layer.clip_path(path);
-        layer
+    pub fn new(geometry: Geometry, offset: Point) -> Self {
+        Self {
+            layers: vec![],
+            offset,
+            geometry,
+        }
     }
 
     pub fn offset(&self) -> &Point {
         &self.offset
     }
 
-    pub fn clip(&self) -> &Clip {
-        &self.clip
-    }
-
-    fn set_offset(&mut self, offset: Point) {
-        self.offset = offset;
-    }
-
-    fn clip_rectangle(&mut self, rectangle: Rectangle) {
-        self.clip = Clip::Rectangle(rectangle);
-    }
-
-    fn clip_rounded_rectangle(&mut self, rounded_rectangle: RoundedRectangle) {
-        self.clip = Clip::RoundedRectangle(rounded_rectangle);
-    }
-
-    fn clip_path(&mut self, path: Path) {
-        self.clip = Clip::Path(path);
+    pub fn geometry(&self) -> &Geometry {
+        &self.geometry
     }
 }
 
 impl Layer for ClipLayer {
+    fn compose(&self, compositor: &mut dyn Compositor) {
+        compositor.compose_clip(self)
+    }
+
     fn layers(&self) -> &[Arc<dyn Layer>] {
         self.layers.as_slice()
     }
 
-    fn compose(&self, compositor: &mut dyn Compositor) {
-        compositor.compose_clip(self)
+    fn clone_arc(&self) -> Arc<dyn Layer> {
+        Arc::new(self.clone())
+    }
+
+    fn any(&self) -> &dyn Any {
+        self
     }
 }
 
@@ -88,15 +60,15 @@ mod tests {
 
     #[test]
     fn test_new() {
-        let clip = ClipLayer::new();
-        assert_eq!(clip.clip, Clip::None);
+        let clip = ClipLayer::none();
+        assert_eq!(clip.geometry, Geometry::None);
         assert_eq!(clip.offset, Point::zero());
         assert_eq!(clip.layers.len(), 0);
     }
 
     #[test]
     fn test_new_dyn_object() {
-        let layer: Arc<dyn Layer> = Arc::new(ClipLayer::new());
+        let layer: Arc<dyn Layer> = Arc::new(ClipLayer::none());
         assert_eq!(layer.count_layers(), 0);
     }
 }

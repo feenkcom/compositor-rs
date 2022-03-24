@@ -1,37 +1,54 @@
 use boxer::{ValueBox, ValueBoxPointer};
 use compositor::{Layer, OffsetLayer, Point};
-use std::cell::RefCell;
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[no_mangle]
-pub fn skia_offset_layer_new_point(x: scalar, y: scalar) -> *mut ValueBox<Rc<RefCell<dyn Layer>>> {
-    let layer: Rc<RefCell<dyn Layer>> =
-        Rc::new(RefCell::new(OffsetLayer::new(Point::new_f32(x, y))));
-    ValueBox::new(layer).into_raw()
+pub fn compositor_offset_layer_new() -> *mut ValueBox<Arc<dyn Layer>> {
+    ValueBox::new(Arc::new(OffsetLayer::new()) as Arc<dyn Layer>).into_raw()
 }
 
 #[no_mangle]
-pub fn skia_offset_layer_new() -> *mut ValueBox<Rc<RefCell<dyn Layer>>> {
-    let layer: Rc<RefCell<dyn Layer>> =
-        Rc::new(RefCell::new(OffsetLayer::new(Point::new_f32(0.0, 0.0))));
-    ValueBox::new(layer).into_raw()
+pub fn compositor_offset_layer_new_point(x: f32, y: f32) -> *mut ValueBox<Arc<dyn Layer>> {
+    ValueBox::new(Arc::new(OffsetLayer::new_offset(Point::new_f32(x, y))) as Arc<dyn Layer>)
+        .into_raw()
 }
 
 #[no_mangle]
-pub fn skia_offset_layer_get_x(layer_ptr: *mut ValueBox<Rc<RefCell<OffsetLayer>>>) -> scalar {
-    layer_ptr.with_not_null_value_return(0.0, |layer| layer.borrow().offset.x)
+pub fn compositor_offset_layer_with_point(
+    layer: *mut ValueBox<Arc<dyn Layer>>,
+    x: f32,
+    y: f32,
+) -> *mut ValueBox<Arc<dyn Layer>> {
+    layer.with_not_null_return(std::ptr::null_mut(), |layer| {
+        let offset_layer = layer
+            .any()
+            .downcast_ref::<OffsetLayer>()
+            .expect("Is not an offset layer!");
+        ValueBox::new(Arc::new(offset_layer.with_offset(Point::new_f32(x, y))) as Arc<dyn Layer>)
+            .into_raw()
+    })
 }
 
 #[no_mangle]
-pub fn skia_offset_layer_get_y(layer_ptr: *mut ValueBox<Rc<RefCell<OffsetLayer>>>) -> scalar {
-    layer_ptr.with_not_null_value_return(0.0, |layer| layer.borrow().offset.y)
+pub fn compositor_offset_layer_get_x(layer: *mut ValueBox<Arc<dyn Layer>>) -> f32 {
+    layer.with_not_null_value_return(0.0, |layer| {
+        let offset_layer = layer
+            .any()
+            .downcast_ref::<OffsetLayer>()
+            .expect("Is not an offset layer!");
+
+        offset_layer.offset().x().into()
+    })
 }
 
 #[no_mangle]
-pub fn skia_offset_layer_set_offset(
-    _ptr: *mut ValueBox<Rc<RefCell<OffsetLayer>>>,
-    x: scalar,
-    y: scalar,
-) {
-    _ptr.with_not_null_value(|layer| layer.borrow_mut().offset = Point::new_f32(x, y));
+pub fn compositor_offset_layer_get_y(layer: *mut ValueBox<Arc<dyn Layer>>) -> f32 {
+    layer.with_not_null_value_return(0.0, |layer| {
+        let offset_layer = layer
+            .any()
+            .downcast_ref::<OffsetLayer>()
+            .expect("Is not an offset layer!");
+
+        offset_layer.offset().y().into()
+    })
 }

@@ -20,7 +20,7 @@ fn record_picture() -> Picture {
 fn main() {
     env_logger::init();
 
-    let picture_layer = PictureLayer::new(Arc::new(SkiaPicture::new(record_picture())));
+    let picture_layer = PictureLayer::new(Arc::new(SkiaPicture::new(record_picture())), true);
     let transformation_layer =
         TransformationLayer::new(into_compositor_matrix(&Matrix::rotate_deg(10.0)))
             .with_layer(Arc::new(picture_layer));

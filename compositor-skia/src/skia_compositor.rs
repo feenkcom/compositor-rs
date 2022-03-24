@@ -6,7 +6,7 @@ use crate::{
     ShadowRasterizer, ShadowToRasterize,
 };
 use compositor::{
-    Clip, ClipLayer, Compositor, Geometry, Layer, LeftoverStateLayer, OffsetLayer, PictureLayer,
+    ClipLayer, Compositor, Geometry, Layer, LeftoverStateLayer, OffsetLayer, PictureLayer,
     Rectangle, Shadow, ShadowLayer, StateCommandType, TransformationLayer,
 };
 use log::trace;
@@ -161,13 +161,13 @@ impl<'canvas, 'cache> SkiaCompositor<'canvas, 'cache> {
     }
 }
 
-fn clip_canvas(canvas: &mut Canvas, clip: &Clip, offset: Option<&compositor::Point>) {
-    match clip {
-        Clip::Rectangle(rectangle) => {
+fn clip_canvas(canvas: &mut Canvas, geometry: &Geometry, offset: Option<&compositor::Point>) {
+    match geometry {
+        Geometry::Rectangle(rectangle) => {
             let rectangle = offset.map_or(rectangle.clone(), |offset| rectangle.translate(offset));
             canvas.clip_rect(into_skia_rect(&rectangle), ClipOp::Intersect, true);
         }
-        Clip::Path(path) => {
+        Geometry::Path(path) => {
             let skia_path = path
                 .any()
                 .downcast_ref::<skia_safe::Path>()
@@ -186,10 +186,10 @@ fn clip_canvas(canvas: &mut Canvas, clip: &Clip, offset: Option<&compositor::Poi
                 }
             }
         }
-        Clip::RoundedRectangle(_) => {
+        Geometry::RoundedRectangle(_) => {
             todo!();
         }
-        Clip::None => {}
+        Geometry::None => {}
     }
 }
 

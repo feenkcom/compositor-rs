@@ -1,7 +1,8 @@
 use crate::{Compositor, Layer, Point};
+use std::any::Any;
 use std::sync::Arc;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct OffsetLayer {
     layers: Vec<Arc<dyn Layer>>,
     offset: Point,
@@ -33,12 +34,20 @@ impl OffsetLayer {
 }
 
 impl Layer for OffsetLayer {
+    fn compose(&self, compositor: &mut dyn Compositor) {
+        compositor.compose_offset(self);
+    }
+
     fn layers(&self) -> &[Arc<dyn Layer>] {
         self.layers.as_slice()
     }
 
-    fn compose(&self, compositor: &mut dyn Compositor) {
-        compositor.compose_offset(self);
+    fn clone_arc(&self) -> Arc<dyn Layer> {
+        Arc::new(self.clone())
+    }
+
+    fn any(&self) -> &dyn Any {
+        self
     }
 }
 

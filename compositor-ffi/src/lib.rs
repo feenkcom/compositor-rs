@@ -1,13 +1,21 @@
-mod compositor;
+mod geometry;
 mod layer;
 mod layer_clip;
+mod layer_leftover;
 mod layer_offset;
 mod layer_picture;
 mod layer_shadow;
 mod layer_transformation;
+mod matrix;
+mod shadow;
 
+pub use geometry::*;
 pub use layer::*;
 pub use layer_clip::*;
+pub use layer_leftover::*;
 pub use layer_offset::*;
 pub use layer_picture::*;
+pub use layer_shadow::*;
 pub use layer_transformation::*;
+pub use matrix::*;
+pub use shadow::*;

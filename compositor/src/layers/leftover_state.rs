@@ -1,4 +1,5 @@
-use crate::{Clip, Compositor, Layer, Matrix, Path, Point, Rectangle, RoundedRectangle};
+use crate::{Compositor, Geometry, Layer, Matrix, Point};
+use std::any::Any;
 use std::sync::Arc;
 
 #[derive(Debug, Clone)]
@@ -10,27 +11,13 @@ pub struct StateCommand {
 #[derive(Debug, Clone)]
 pub enum StateCommandType {
     Transform(Matrix),
-    Clip(Clip),
+    Clip(Geometry),
 }
 
 impl StateCommand {
-    pub fn clip_rect(rect: Rectangle, offset: Point) -> Self {
+    pub fn clip(geometry: Geometry, offset: Point) -> Self {
         StateCommand {
-            command_type: StateCommandType::Clip(Clip::Rectangle(rect)),
-            offset,
-        }
-    }
-
-    pub fn clip_rrect(rrect: RoundedRectangle, offset: Point) -> Self {
-        StateCommand {
-            command_type: StateCommandType::Clip(Clip::RoundedRectangle(rrect)),
-            offset,
-        }
-    }
-
-    pub fn clip_path(path: Path, offset: Point) -> Self {
-        StateCommand {
-            command_type: StateCommandType::Clip(Clip::Path(path)),
+            command_type: StateCommandType::Clip(geometry),
             offset,
         }
     }
@@ -43,43 +30,39 @@ impl StateCommand {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LeftoverStateLayer {
     layers: Vec<Arc<dyn Layer>>,
     pub commands: Vec<StateCommand>,
 }
 
 impl LeftoverStateLayer {
-    pub fn new() -> Self {
+    pub fn new(commands: Vec<StateCommand>) -> Self {
         Self {
             layers: vec![],
-            commands: vec![],
+            commands,
         }
     }
 
-    pub fn clip_rect(&mut self, rect: Rectangle, offset: Point) {
-        self.commands.push(StateCommand::clip_rect(rect, offset));
-    }
-
-    pub fn clip_rrect(&mut self, rrect: RoundedRectangle, offset: Point) {
-        self.commands.push(StateCommand::clip_rrect(rrect, offset));
-    }
-
-    pub fn clip_path(&mut self, path: Path, offset: Point) {
-        self.commands.push(StateCommand::clip_path(path, offset));
-    }
-
-    pub fn transform(&mut self, matrix: Matrix, offset: Point) {
-        self.commands.push(StateCommand::transform(matrix, offset));
+    pub fn clip(&mut self, geometry: Geometry, offset: Point) {
+        self.commands.push(StateCommand::clip(geometry, offset));
     }
 }
 
 impl Layer for LeftoverStateLayer {
+    fn compose(&self, compositor: &mut dyn Compositor) {
+        compositor.compose_leftover(self);
+    }
+
     fn layers(&self) -> &[Arc<dyn Layer>] {
         &self.layers
     }
 
-    fn compose(&self, compositor: &mut dyn Compositor) {
-        compositor.compose_leftover(self);
+    fn clone_arc(&self) -> Arc<dyn Layer> {
+        Arc::new(self.clone())
+    }
+
+    fn any(&self) -> &dyn Any {
+        self
     }
 }

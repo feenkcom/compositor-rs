@@ -1,31 +1,27 @@
 use boxer::{ValueBox, ValueBoxPointer, ValueBoxPointerReference};
-use compositor::{ClipLayer, Layer};
-use std::cell::RefCell;
-use std::rc::Rc;
+use compositor::Layer;
+use std::sync::Arc;
 
 #[no_mangle]
-pub fn compositor_layer_add(
-    _target_layer_ptr: *mut ValueBox<Rc<RefCell<dyn Layer>>>,
-    mut _child_layer_ptr: *mut ValueBox<Rc<RefCell<dyn Layer>>>,
-) {
-    _target_layer_ptr.with_not_null_value(|target_layer| {
-        _child_layer_ptr.with_not_null_value(|child_layer| {
-            target_layer.borrow_mut().add_layer(child_layer);
-        })
+pub fn compositor_layer_clone(
+    layer_ptr: *mut ValueBox<Arc<dyn Layer>>,
+) -> *mut ValueBox<Arc<dyn Layer>> {
+    layer_ptr.with_not_null_return(std::ptr::null_mut(), |layer| {
+        ValueBox::new(layer.clone_arc()).into_raw()
     })
 }
 
 #[no_mangle]
-pub fn compositor_layer_count_layers(layer_ptr: *mut ValueBox<Rc<RefCell<dyn Layer>>>) -> usize {
-    layer_ptr.with_not_null_value_return(0, |layer| layer.borrow().count_layers())
+pub fn compositor_layer_count_layers(layer_ptr: *mut ValueBox<Arc<dyn Layer>>) -> usize {
+    layer_ptr.with_not_null_value_return(0, |layer| layer.count_layers())
 }
 
 #[no_mangle]
-pub fn compositor_layer_count_refs(layer_ptr: *mut ValueBox<Rc<RefCell<dyn Layer>>>) -> usize {
-    layer_ptr.with_not_null_value_return(0, |layer| Rc::strong_count(&layer) - 1)
+pub fn compositor_layer_count_refs(layer_ptr: *mut ValueBox<Arc<dyn Layer>>) -> usize {
+    layer_ptr.with_not_null_value_return(0, |layer| Arc::strong_count(&layer) - 1)
 }
 
 #[no_mangle]
-pub fn compositor_layer_drop(ptr: &mut *mut ValueBox<Rc<RefCell<dyn Layer>>>) {
+pub fn compositor_layer_drop(ptr: &mut *mut ValueBox<Arc<dyn Layer>>) {
     ptr.drop();
 }

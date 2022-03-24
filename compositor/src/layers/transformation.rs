@@ -1,7 +1,8 @@
 use crate::{Compositor, Layer, Matrix};
+use std::any::Any;
 use std::sync::Arc;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TransformationLayer {
     layers: Vec<Arc<dyn Layer>>,
     matrix: Matrix,
@@ -30,11 +31,19 @@ impl TransformationLayer {
 }
 
 impl Layer for TransformationLayer {
+    fn compose(&self, compositor: &mut dyn Compositor) {
+        compositor.compose_transformation(self);
+    }
+
     fn layers(&self) -> &[Arc<dyn Layer>] {
         self.layers.as_slice()
     }
 
-    fn compose(&self, compositor: &mut dyn Compositor) {
-        compositor.compose_transformation(self);
+    fn clone_arc(&self) -> Arc<dyn Layer> {
+        Arc::new(self.clone())
+    }
+
+    fn any(&self) -> &dyn Any {
+        self
     }
 }

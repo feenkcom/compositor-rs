@@ -6,7 +6,7 @@ mod picture;
 mod shadow;
 mod transformation;
 
-pub use clip::{Clip, ClipLayer};
+pub use clip::ClipLayer;
 pub use layer::Layer;
 pub use leftover_state::{LeftoverStateLayer, StateCommand, StateCommandType};
 pub use offset::OffsetLayer;

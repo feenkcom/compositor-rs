@@ -1,11 +1,12 @@
 use crate::{Color, Compositor, Geometry, Layer, Point, Radius, Rectangle};
+use std::any::Any;
 
 use std::collections::hash_map::DefaultHasher;
 use std::fmt::Debug;
 use std::hash::{Hash, Hasher};
 use std::sync::Arc;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ShadowLayer {
     layers: Vec<Arc<dyn Layer>>,
     shadow: Shadow,
@@ -25,12 +26,20 @@ impl ShadowLayer {
 }
 
 impl Layer for ShadowLayer {
+    fn compose(&self, compositor: &mut dyn Compositor) {
+        compositor.compose_shadow(self);
+    }
+
     fn layers(&self) -> &[Arc<dyn Layer>] {
         self.layers.as_slice()
     }
 
-    fn compose(&self, compositor: &mut dyn Compositor) {
-        compositor.compose_shadow(self);
+    fn clone_arc(&self) -> Arc<dyn Layer> {
+        Arc::new(self.clone())
+    }
+
+    fn any(&self) -> &dyn Any {
+        self
     }
 }
 

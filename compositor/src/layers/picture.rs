@@ -11,13 +11,13 @@ pub struct PictureLayer {
 }
 
 impl PictureLayer {
-    pub fn new(picture: Arc<dyn Picture>) -> Self {
+    pub fn new(picture: Arc<dyn Picture>, needs_cache: bool) -> Self {
         let id = picture.unique_id();
 
         Self {
             picture,
             picture_id: id,
-            needs_cache: true,
+            needs_cache,
         }
     }
 
@@ -39,12 +39,20 @@ impl PictureLayer {
 }
 
 impl Layer for PictureLayer {
+    fn compose(&self, compositor: &mut dyn Compositor) {
+        compositor.compose_picture(self);
+    }
+
     fn layers(&self) -> &[Arc<dyn Layer>] {
         &[]
     }
 
-    fn compose(&self, compositor: &mut dyn Compositor) {
-        compositor.compose_picture(self);
+    fn clone_arc(&self) -> Arc<dyn Layer> {
+        Arc::new(self.clone())
+    }
+
+    fn any(&self) -> &dyn Any {
+        self
     }
 }
 
