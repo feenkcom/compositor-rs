@@ -7,6 +7,7 @@ mod layer_picture;
 mod layer_shadow;
 mod layer_transformation;
 mod matrix;
+mod picture;
 mod shadow;
 
 pub use geometry::*;
@@ -18,4 +19,5 @@ pub use layer_picture::*;
 pub use layer_shadow::*;
 pub use layer_transformation::*;
 pub use matrix::*;
+pub use picture::*;
 pub use shadow::*;
