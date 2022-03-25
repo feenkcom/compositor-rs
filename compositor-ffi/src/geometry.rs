@@ -1,5 +1,5 @@
 use boxer::{ValueBox, ValueBoxPointer, ValueBoxPointerReference};
-use compositor::{Geometry, Path, Rectangle};
+use compositor::{Circle, Geometry, Path, Point, Radius, Rectangle, RoundedRectangle};
 
 #[no_mangle]
 pub fn compositor_geometry_none() -> *mut ValueBox<Geometry> {
@@ -15,6 +15,44 @@ pub fn compositor_geometry_new_rectangle(
 ) -> *mut ValueBox<Geometry> {
     ValueBox::new(Geometry::Rectangle(Rectangle::new(
         left, top, width, height,
+    )))
+    .into_raw()
+}
+
+#[no_mangle]
+pub fn compositor_geometry_new_rounded_rectangle(
+    left: f32,
+    top: f32,
+    width: f32,
+    height: f32,
+    r_left_x: f32,
+    r_left_y: f32,
+    r_top_x: f32,
+    r_top_y: f32,
+    r_right_x: f32,
+    r_right_y: f32,
+    r_bottom_x: f32,
+    r_bottom_y: f32,
+) -> *mut ValueBox<Geometry> {
+    ValueBox::new(Geometry::RoundedRectangle(RoundedRectangle::new(
+        Rectangle::new(left, top, width, height),
+        Radius::new(r_left_x, r_left_y),
+        Radius::new(r_top_x, r_top_y),
+        Radius::new(r_right_x, r_right_y),
+        Radius::new(r_bottom_x, r_bottom_y),
+    )))
+    .into_raw()
+}
+
+#[no_mangle]
+pub fn compositor_geometry_new_circle(
+    center_x: f32,
+    center_y: f32,
+    radius: f32,
+) -> *mut ValueBox<Geometry> {
+    ValueBox::new(Geometry::Circle(Circle::new(
+        Point::new(center_x, center_y),
+        radius,
     )))
     .into_raw()
 }

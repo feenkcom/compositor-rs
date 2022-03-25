@@ -18,8 +18,16 @@ pub fn into_skia_rect(rectangle: &compositor::Rectangle) -> skia_safe::Rect {
     )
 }
 
-pub fn into_skia_rrect(_rounded_rectangle: &compositor::RoundedRectangle) -> skia_safe::RRect {
-    todo!()
+pub fn into_skia_rrect(rounded_rectangle: &compositor::RoundedRectangle) -> skia_safe::RRect {
+    let compositor_radii = rounded_rectangle.radii();
+    let skia_radii = [
+        skia_safe::Vector::from(compositor_radii[0].as_tuple_f32()),
+        skia_safe::Vector::from(compositor_radii[1].as_tuple_f32()),
+        skia_safe::Vector::from(compositor_radii[2].as_tuple_f32()),
+        skia_safe::Vector::from(compositor_radii[3].as_tuple_f32()),
+    ];
+
+    skia_safe::RRect::new_rect_radii(&into_skia_rect(rounded_rectangle.rectangle()), &skia_radii)
 }
 
 pub fn to_compositor_color(color: skia_safe::Color) -> compositor::Color {

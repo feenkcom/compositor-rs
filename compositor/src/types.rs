@@ -20,11 +20,84 @@ pub struct Point(euclid::Point2D<Scalar, Scalar>);
 pub struct Radius((Scalar, Scalar));
 
 #[derive(Debug, Clone, Hash, Eq, PartialEq)]
-pub struct RoundedRectangle {}
+pub struct RoundedRectangle {
+    rectangle: Rectangle,
+    top_left_radius: Radius,
+    top_right_radius: Radius,
+    bottom_right_radius: Radius,
+    bottom_left_radius: Radius,
+}
+
+impl RoundedRectangle {
+    pub fn new(
+        rectangle: Rectangle,
+        top_left_radius: Radius,
+        top_right_radius: Radius,
+        bottom_right_radius: Radius,
+        bottom_left_radius: Radius,
+    ) -> Self {
+        Self {
+            rectangle,
+            top_left_radius,
+            top_right_radius,
+            bottom_right_radius,
+            bottom_left_radius,
+        }
+    }
+
+    pub fn rectangle(&self) -> &Rectangle {
+        &self.rectangle
+    }
+
+    pub fn radii(&self) -> [&Radius; 4] {
+        [
+            &self.top_left_radius,
+            &self.top_right_radius,
+            &self.bottom_right_radius,
+            &self.bottom_left_radius,
+        ]
+    }
+
+    pub fn bounds(&self) -> Rectangle {
+        self.rectangle.clone()
+    }
+}
 
 #[repr(transparent)]
 #[derive(Debug)]
 pub struct Path(Box<dyn VectorPath>);
+
+#[derive(Debug, Clone, Hash, Eq, PartialEq, Default)]
+pub struct Circle {
+    center: Point,
+    radius: Scalar,
+}
+
+impl Circle {
+    pub fn new(center: impl Into<Point>, radius: impl Into<Scalar>) -> Self {
+        Self {
+            center: center.into(),
+            radius: radius.into(),
+        }
+    }
+
+    pub fn center(&self) -> &Point {
+        &self.center
+    }
+
+    pub fn radius(&self) -> Scalar {
+        self.radius
+    }
+
+    pub fn bounds(&self) -> Rectangle {
+        Rectangle::new(
+            self.center.x() - self.radius,
+            self.center.y() - self.radius,
+            self.radius * 2.0.into(),
+            self.radius * 2.0.into(),
+        )
+    }
+}
 
 #[repr(transparent)]
 #[derive(Debug, Clone, Hash, Eq, PartialEq, Default)]
@@ -41,6 +114,7 @@ pub enum Geometry {
     None,
     Rectangle(Rectangle),
     RoundedRectangle(RoundedRectangle),
+    Circle(Circle),
     Path(Path),
 }
 
@@ -55,9 +129,8 @@ impl Geometry {
         match self {
             Geometry::None => Rectangle::zero(),
             Geometry::Rectangle(rectangle) => rectangle.clone(),
-            Geometry::RoundedRectangle(_) => {
-                todo!()
-            }
+            Geometry::RoundedRectangle(rounded_rectangle) => rounded_rectangle.bounds(),
+            Geometry::Circle(circle) => circle.bounds(),
             Geometry::Path(path) => path.bounds(),
         }
     }
@@ -68,8 +141,8 @@ impl Point {
         Self(euclid::Point2D::<Scalar, Scalar>::zero())
     }
 
-    pub fn new(x: Scalar, y: Scalar) -> Self {
-        Self(euclid::Point2D::<Scalar, Scalar>::new(x, y))
+    pub fn new(x: impl Into<Scalar>, y: impl Into<Scalar>) -> Self {
+        Self(euclid::Point2D::<Scalar, Scalar>::new(x.into(), y.into()))
     }
 
     pub fn new_f32(x: f32, y: f32) -> Self {
@@ -114,7 +187,12 @@ impl Rectangle {
         Self(euclid::Rect::<Scalar, Scalar>::zero())
     }
 
-    pub fn new(left: f32, top: f32, width: f32, height: f32) -> Self {
+    pub fn new(
+        left: impl Into<Scalar>,
+        top: impl Into<Scalar>,
+        width: impl Into<Scalar>,
+        height: impl Into<Scalar>,
+    ) -> Self {
         Self(euclid::Rect::<Scalar, Scalar>::new(
             Point2D::new(left.into(), top.into()),
             Size2D::new(width.into(), height.into()),

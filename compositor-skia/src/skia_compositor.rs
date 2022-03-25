@@ -13,7 +13,8 @@ use log::trace;
 use skia_safe::image_filters::drop_shadow_only;
 use skia_safe::paint::Style;
 use skia_safe::{
-    scalar, BlendMode, Canvas, ClipOp, Color, Image, Matrix, Paint, Point, Vector, M44,
+    scalar, BlendMode, Canvas, ClipOp, Color, Image, Matrix, Paint, PathDirection, Point, Vector,
+    M44,
 };
 
 #[derive(Debug)]
@@ -186,10 +187,18 @@ fn clip_canvas(canvas: &mut Canvas, geometry: &Geometry, offset: Option<&composi
                 }
             }
         }
-        Geometry::RoundedRectangle(_) => {
-            todo!();
+        Geometry::RoundedRectangle(rounded_rectangle) => {
+            canvas.clip_rrect(into_skia_rrect(rounded_rectangle), ClipOp::Intersect, true);
         }
         Geometry::None => {}
+        Geometry::Circle(circle) => {
+            let path = skia_safe::Path::circle(
+                as_skia_point(circle.center()).clone(),
+                circle.radius().into(),
+                PathDirection::CW,
+            );
+            canvas.clip_path(&path, ClipOp::Intersect, true);
+        }
     }
 }
 
@@ -261,6 +270,13 @@ pub(crate) fn draw_geometry(canvas: &mut Canvas, geometry: &Geometry, paint: &Pa
                 .downcast_ref::<skia_safe::Path>()
                 .expect("Path is not Skia path!");
             canvas.draw_path(skia_path, &paint);
+        }
+        Geometry::Circle(circle) => {
+            canvas.draw_circle(
+                as_skia_point(circle.center()).clone(),
+                circle.radius().into(),
+                &paint,
+            );
         }
     }
 }
