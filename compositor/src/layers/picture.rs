@@ -47,6 +47,10 @@ impl Layer for PictureLayer {
         &[]
     }
 
+    fn with_layers(&self, _layers: Vec<Arc<dyn Layer>>) -> Arc<dyn Layer> {
+        self.clone_arc()
+    }
+
     fn clone_arc(&self) -> Arc<dyn Layer> {
         Arc::new(self.clone())
     }

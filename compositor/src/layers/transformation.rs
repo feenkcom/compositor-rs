@@ -39,6 +39,13 @@ impl Layer for TransformationLayer {
         self.layers.as_slice()
     }
 
+    fn with_layers(&self, layers: Vec<Arc<dyn Layer>>) -> Arc<dyn Layer> {
+        Arc::new(Self {
+            layers,
+            matrix: self.matrix.clone(),
+        })
+    }
+
     fn clone_arc(&self) -> Arc<dyn Layer> {
         Arc::new(self.clone())
     }

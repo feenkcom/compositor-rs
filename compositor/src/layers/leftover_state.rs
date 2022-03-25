@@ -58,6 +58,13 @@ impl Layer for LeftoverStateLayer {
         &self.layers
     }
 
+    fn with_layers(&self, layers: Vec<Arc<dyn Layer>>) -> Arc<dyn Layer> {
+        Arc::new(Self {
+            layers,
+            commands: self.commands.clone(),
+        })
+    }
+
     fn clone_arc(&self) -> Arc<dyn Layer> {
         Arc::new(self.clone())
     }

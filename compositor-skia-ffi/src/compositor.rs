@@ -1,12 +1,12 @@
 use boxer::boxes::{ReferenceBox, ReferenceBoxPointer};
-use boxer::{ValueBox, ValueBoxPointer};
+use boxer::{ValueBox, ValueBoxPointer, ValueBoxPointerReference};
 use compositor::Layer;
 use compositor_skia::{Canvas, ImageCache, ShadowCache, SkiaCompositor};
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[no_mangle]
 pub fn skia_compositor_compose(
-    layer: *mut ValueBox<Rc<dyn Layer>>,
+    layer: *mut ValueBox<Arc<dyn Layer>>,
     canvas: *mut ReferenceBox<Canvas>,
     image_cache: *mut ValueBox<ImageCache>,
     shadow_cache: *mut ValueBox<ShadowCache>,
@@ -21,4 +21,24 @@ pub fn skia_compositor_compose(
             })
         })
     })
+}
+
+#[no_mangle]
+pub fn skia_compositor_image_cache_new() -> *mut ValueBox<ImageCache> {
+    ValueBox::new(ImageCache::new()).into_raw()
+}
+
+#[no_mangle]
+pub fn skia_compositor_image_cache_drop(ptr: &mut *mut ValueBox<ImageCache>) {
+    ptr.drop();
+}
+
+#[no_mangle]
+pub fn skia_compositor_shadow_cache_new() -> *mut ValueBox<ShadowCache> {
+    ValueBox::new(ShadowCache::new()).into_raw()
+}
+
+#[no_mangle]
+pub fn skia_compositor_shadow_cache_drop(ptr: &mut *mut ValueBox<ShadowCache>) {
+    ptr.drop();
 }

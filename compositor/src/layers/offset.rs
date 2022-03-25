@@ -42,6 +42,13 @@ impl Layer for OffsetLayer {
         self.layers.as_slice()
     }
 
+    fn with_layers(&self, layers: Vec<Arc<dyn Layer>>) -> Arc<dyn Layer> {
+        Arc::new(Self {
+            layers,
+            offset: self.offset.clone(),
+        })
+    }
+
     fn clone_arc(&self) -> Arc<dyn Layer> {
         Arc::new(self.clone())
     }
