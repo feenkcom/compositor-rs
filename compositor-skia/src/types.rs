@@ -1,4 +1,7 @@
+use compositor::{Rectangle, VectorPath};
 use std::any::Any;
+use std::collections::hash_map::DefaultHasher;
+use std::hash::Hash;
 use std::slice;
 
 pub fn as_skia_point(point: &compositor::Point) -> &skia_safe::Point {
@@ -92,6 +95,51 @@ impl SkiaPicture {
 impl From<skia_safe::Picture> for SkiaPicture {
     fn from(picture: skia_safe::Picture) -> Self {
         Self(picture)
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct SkiaPath(skia_safe::Path);
+
+impl compositor::VectorPath for SkiaPath {
+    fn bounds(&self) -> Rectangle {
+        to_compositor_rectangle(self.0.bounds().clone())
+    }
+
+    fn clone_box(&self) -> Box<dyn VectorPath> {
+        Box::new(self.clone())
+    }
+
+    fn eq_box(&self, other: &Box<dyn VectorPath>) -> bool {
+        match other.any().downcast_ref::<SkiaPath>() {
+            None => false,
+            Some(other) => self.0.eq(&other.0),
+        }
+    }
+
+    fn hash_box(&self, state: &mut DefaultHasher) {
+        let serialized = self.0.serialize();
+        serialized.hash(state);
+    }
+
+    fn any(&self) -> &dyn Any {
+        self
+    }
+}
+
+impl SkiaPath {
+    pub fn new(path: skia_safe::Path) -> Self {
+        Self(path)
+    }
+
+    pub fn path(&self) -> &skia_safe::Path {
+        &self.0
+    }
+}
+
+impl From<skia_safe::Path> for SkiaPath {
+    fn from(path: skia_safe::Path) -> Self {
+        Self(path)
     }
 }
 

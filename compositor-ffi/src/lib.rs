@@ -7,6 +7,7 @@ mod layer_picture;
 mod layer_shadow;
 mod layer_transformation;
 mod matrix;
+mod path;
 mod picture;
 mod shadow;
 

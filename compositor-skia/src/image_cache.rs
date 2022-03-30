@@ -2,6 +2,7 @@ use skia_safe::{Image, Matrix};
 use std::collections::HashMap;
 use std::fmt::{Debug, Error, Formatter};
 
+#[derive(Debug)]
 pub struct CachedImage {
     image: Image,
     was_used: bool,
@@ -46,14 +47,18 @@ impl ImageCache {
     }
 
     pub fn push_id_image(&mut self, picture_id: u32, image: Image, matrix: Matrix) {
-        self.images
-            .insert(picture_id, CachedImage::new(image, matrix));
+        let mut cached_image = CachedImage::new(image, matrix);
+        cached_image.mark_used();
+
+        self.images.insert(picture_id, cached_image);
     }
 
-    pub fn get_picture_image(&mut self, picture_id: u32) -> Option<(&Image, Matrix)> {
+    pub fn get_picture_image(&mut self, picture_id: u32) -> Option<(Image, Matrix)> {
         self.images.get_mut(&picture_id).and_then(|cached_image| {
             cached_image.mark_used();
-            Some((&cached_image.image, cached_image.matrix))
+            let image = cached_image.image.clone();
+            let matrix = cached_image.matrix;
+            Some((image, matrix))
         })
     }
 

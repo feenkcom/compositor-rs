@@ -3,19 +3,21 @@ use crate::renderers::PictureToRasterize;
 use crate::shadow_cache::ShadowCache;
 use crate::{
     as_skia_point, into_skia_matrix, into_skia_rect, into_skia_rrect, to_skia_point,
-    ShadowRasterizer, ShadowToRasterize,
+    PictureRasterizer, ShadowRasterizer, ShadowToRasterize, SkiaPath,
 };
 use compositor::{
     ClipLayer, Compositor, Geometry, Layer, LeftoverStateLayer, OffsetLayer, PictureLayer,
     Rectangle, Shadow, ShadowLayer, StateCommandType, TransformationLayer,
 };
-use log::trace;
+use log::{error, trace};
 use skia_safe::image_filters::drop_shadow_only;
 use skia_safe::paint::Style;
 use skia_safe::{
     scalar, BlendMode, Canvas, ClipOp, Color, Image, Matrix, Paint, PathDirection, Point, Vector,
     M44,
 };
+use std::ops::Neg;
+use std::sync::Arc;
 
 #[derive(Debug)]
 pub struct SkiaCompositor<'canvas, 'cache> {
@@ -25,6 +27,16 @@ pub struct SkiaCompositor<'canvas, 'cache> {
 }
 
 impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
+    fn compose(&mut self, layer: Arc<dyn Layer>) {
+        self.image_cache.mark_images_as_not_used();
+        self.shadow_cache.mark_images_as_not_used();
+
+        layer.compose(self);
+
+        self.image_cache.remove_unused_images();
+        self.shadow_cache.remove_unused_images();
+    }
+
     fn compose_clip(&mut self, layer: &ClipLayer) {
         let count = self.canvas.save();
 
@@ -65,7 +77,10 @@ impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
                             canvas,
                             &image,
                             &Matrix::new_identity(),
-                            &layer.shadow().cull_rect(),
+                            &layer
+                                .shadow()
+                                .cull_rect()
+                                .translate(&layer.shadow().inflation_offset().neg()),
                         );
 
                         self.shadow_cache
@@ -78,7 +93,10 @@ impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
                     canvas,
                     image,
                     &Matrix::new_identity(),
-                    &layer.shadow().cull_rect(),
+                    &layer
+                        .shadow()
+                        .cull_rect()
+                        .translate(&layer.shadow().inflation_offset().neg()),
                 );
             }
         }
@@ -108,12 +126,40 @@ impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
                     .picture()
                     .any()
                     .downcast_ref::<skia_safe::Picture>()
-                    .expect("Path is not Skia path!");
+                    .expect("Picture is not Skia Picture!");
 
-                canvas.draw_picture(&picture, None, None);
+                if layer.needs_cache() {
+                    let rasterized_picture = PictureRasterizer::new().rasterize(
+                        PictureToRasterize::new(picture.clone(), canvas.local_to_device_as_3x3()),
+                        canvas,
+                    );
+
+                    match rasterized_picture.image {
+                        None => {
+                            error!("Failed to rasterize picture");
+                            canvas.draw_picture(picture, None, None);
+                        }
+                        Some(image) => {
+                            draw_image(
+                                canvas,
+                                &image,
+                                &rasterized_picture.matrix,
+                                &layer.cull_rect(),
+                            );
+
+                            self.image_cache.push_id_image(
+                                layer.id(),
+                                image,
+                                rasterized_picture.matrix,
+                            );
+                        }
+                    }
+                } else {
+                    canvas.draw_picture(picture, None, None);
+                }
             }
             Some((image, matrix)) => {
-                draw_image(canvas, image, &matrix, &layer.cull_rect());
+                draw_image(canvas, &image, &matrix, &layer.cull_rect());
             }
         }
     }
@@ -171,8 +217,9 @@ fn clip_canvas(canvas: &mut Canvas, geometry: &Geometry, offset: Option<&composi
         Geometry::Path(path) => {
             let skia_path = path
                 .any()
-                .downcast_ref::<skia_safe::Path>()
-                .expect("Path is not Skia path!");
+                .downcast_ref::<SkiaPath>()
+                .expect("Path is not Skia path!")
+                .path();
 
             match offset {
                 None => {
@@ -267,9 +314,9 @@ pub(crate) fn draw_geometry(canvas: &mut Canvas, geometry: &Geometry, paint: &Pa
         Geometry::Path(path) => {
             let skia_path = path
                 .any()
-                .downcast_ref::<skia_safe::Path>()
+                .downcast_ref::<SkiaPath>()
                 .expect("Path is not Skia path!");
-            canvas.draw_path(skia_path, &paint);
+            canvas.draw_path(skia_path.path(), &paint);
         }
         Geometry::Circle(circle) => {
             canvas.draw_circle(

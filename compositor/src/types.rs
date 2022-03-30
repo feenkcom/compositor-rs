@@ -1,9 +1,10 @@
 use euclid::{Point2D, Size2D, Vector2D};
 use ordered_float::OrderedFloat;
 use std::any::Any;
+use std::collections::hash_map::DefaultHasher;
 use std::fmt::Debug;
 use std::hash::{Hash, Hasher};
-use std::ops::Add;
+use std::ops::{Add, Neg};
 
 pub type Scalar = OrderedFloat<f32>;
 
@@ -162,6 +163,14 @@ impl Point {
     }
 }
 
+impl Neg for Point {
+    type Output = Self;
+
+    fn neg(self) -> Self {
+        Self::new(self.x().neg(), self.y().neg())
+    }
+}
+
 impl From<Point> for Vector2D<Scalar, Scalar> {
     fn from(point: Point) -> Self {
         Vector2D::new(point.x(), point.y())
@@ -291,7 +300,7 @@ pub trait VectorPath: Debug {
     fn bounds(&self) -> Rectangle;
     fn clone_box(&self) -> Box<dyn VectorPath>;
     fn eq_box(&self, other: &Box<dyn VectorPath>) -> bool;
-    fn hash_box(&self, state: &mut dyn Hasher);
+    fn hash_box(&self, state: &mut DefaultHasher);
     fn any(&self) -> &dyn Any;
 }
 
@@ -303,7 +312,9 @@ impl Clone for Path {
 
 impl Hash for Path {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        self.0.hash_box(state);
+        let mut hasher = DefaultHasher::default();
+        self.0.hash_box(&mut hasher);
+        state.write_u64(hasher.finish())
     }
 }
 

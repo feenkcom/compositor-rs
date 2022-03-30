@@ -3,20 +3,19 @@ use skia_safe::{
     Canvas, Color, ColorSpace, IRect, Image, ImageInfo, Matrix, Picture, Rect, RoundOut, Vector,
 };
 use std::fmt::{Debug, Error, Formatter};
-use std::sync::Arc;
 
 use crate::renderers::rasterizer::create_surface;
 
 /// I contain all the necessary data to rasterize a picture
 #[derive(Clone)]
 pub struct PictureToRasterize {
-    pub picture: Arc<Picture>,
+    pub picture: Picture,
     pub bounds: Rect,
     pub matrix: Matrix,
 }
 
 impl PictureToRasterize {
-    pub fn new(picture: Arc<Picture>, matrix: Matrix) -> Self {
+    pub fn new(picture: Picture, matrix: Matrix) -> Self {
         let logical_bounds = picture.cull_rect();
         Self {
             picture,
@@ -58,7 +57,7 @@ impl Debug for PictureToRasterize {
 /// I hold a result of the picture rasterization. The image is [`Some`] if the process
 /// was successful
 pub struct RasterizedPicture {
-    pub picture: Arc<Picture>,
+    pub picture: Picture,
     pub image: Option<Image>,
     pub matrix: Matrix,
     pub stats: RasterizationStats,
@@ -66,7 +65,7 @@ pub struct RasterizedPicture {
 
 impl RasterizedPicture {
     pub fn new(
-        picture: Arc<Picture>,
+        picture: Picture,
         image: Option<Image>,
         matrix: Matrix,
         stats: RasterizationStats,
