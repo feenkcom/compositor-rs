@@ -146,6 +146,7 @@ impl From<skia_safe::Path> for SkiaPath {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use compositor::Radius;
 
     #[test]
     fn test_point() {
@@ -169,5 +170,25 @@ mod tests {
             skia_rectangle.height(),
             compositor_rectangle.height().into()
         );
+    }
+
+    #[test]
+    fn test_into_rounded_rectangle() {
+        let compositor_rectangle = compositor::Rectangle::new(100.0, 200.0, 200.0, 300.0);
+        let compositor_rounded_rectangle = compositor::RoundedRectangle::new(
+            compositor_rectangle.clone(),
+            Radius::new(5.0, 10.0),
+            Radius::new(15.0, 20.0),
+            Radius::new(25.0, 30.0),
+            Radius::new(35.0, 40.0),
+        );
+
+        let skia_rrect = into_skia_rrect(&compositor_rounded_rectangle);
+        let skia_rect = skia_rrect.bounds().clone();
+
+        assert_eq!(skia_rect.left(), compositor_rectangle.left().into());
+        assert_eq!(skia_rect.top(), compositor_rectangle.top().into());
+        assert_eq!(skia_rect.width(), compositor_rectangle.width().into());
+        assert_eq!(skia_rect.height(), compositor_rectangle.height().into());
     }
 }

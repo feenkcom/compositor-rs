@@ -59,6 +59,12 @@ impl RoundedRectangle {
         ]
     }
 
+    pub fn translate(&self, offset: &Point) -> Self {
+        let mut translated = self.clone();
+        translated.rectangle = self.rectangle.translate(offset);
+        translated
+    }
+
     pub fn bounds(&self) -> Rectangle {
         self.rectangle.clone()
     }
@@ -97,6 +103,13 @@ impl Circle {
             self.radius * 2.0.into(),
             self.radius * 2.0.into(),
         )
+    }
+
+    pub fn translate(&self, offset: &Point) -> Self {
+        Self {
+            center: &self.center + offset,
+            radius: self.radius,
+        }
     }
 }
 
@@ -191,6 +204,14 @@ impl Add for Point {
     }
 }
 
+impl Add for &Point {
+    type Output = Point;
+
+    fn add(self, rhs: &Point) -> Self::Output {
+        Point::new(self.x() + rhs.x(), self.y() + rhs.y())
+    }
+}
+
 impl Rectangle {
     pub fn zero() -> Self {
         Self(euclid::Rect::<Scalar, Scalar>::zero())
@@ -255,7 +276,7 @@ impl Matrix {
 }
 
 impl Radius {
-    pub fn new(x: f32, y: f32) -> Self {
+    pub fn new(x: impl Into<Scalar>, y: impl Into<Scalar>) -> Self {
         Self((x.into(), y.into()))
     }
 

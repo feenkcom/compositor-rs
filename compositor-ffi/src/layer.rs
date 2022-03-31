@@ -1,3 +1,4 @@
+use boxer::string::BoxerString;
 use boxer::{ValueBox, ValueBoxPointer, ValueBoxPointerReference};
 use compositor::Layer;
 use std::sync::Arc;
@@ -8,6 +9,13 @@ pub fn compositor_layer_clone(
 ) -> *mut ValueBox<Arc<dyn Layer>> {
     layer_ptr.with_not_null_return(std::ptr::null_mut(), |layer| {
         ValueBox::new(layer.clone_arc()).into_raw()
+    })
+}
+
+#[no_mangle]
+pub fn compositor_layer_debug(layer: *mut ValueBox<Arc<dyn Layer>>) -> *mut ValueBox<BoxerString> {
+    layer.with_not_null_return(std::ptr::null_mut(), |layer| {
+        ValueBox::new(BoxerString::from_string(format!("{:#?}", layer))).into_raw()
     })
 }
 

@@ -235,10 +235,15 @@ fn clip_canvas(canvas: &mut Canvas, geometry: &Geometry, offset: Option<&composi
             }
         }
         Geometry::RoundedRectangle(rounded_rectangle) => {
-            canvas.clip_rrect(into_skia_rrect(rounded_rectangle), ClipOp::Intersect, true);
+            let rounded_rectangle = offset.map_or(rounded_rectangle.clone(), |offset| {
+                rounded_rectangle.translate(offset)
+            });
+            canvas.clip_rrect(into_skia_rrect(&rounded_rectangle), ClipOp::Intersect, true);
         }
         Geometry::None => {}
         Geometry::Circle(circle) => {
+            let circle = offset.map_or(circle.clone(), |offset| circle.translate(offset));
+
             let path = skia_safe::Path::circle(
                 as_skia_point(circle.center()).clone(),
                 circle.radius().into(),
