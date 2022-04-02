@@ -80,7 +80,9 @@ impl ImageCache {
         }
     }
 
-    pub fn remove_unused_images(&mut self) {
-        self.images.retain(|_, cached_image| cached_image.was_used)
+    pub fn remove_unused_images(&mut self) -> usize {
+        let size = self.images.len();
+        self.images.retain(|_, cached_image| cached_image.was_used);
+        size - self.images.len()
     }
 }

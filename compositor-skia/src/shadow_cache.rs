@@ -89,9 +89,11 @@ impl ShadowCache {
         }
     }
 
-    pub fn remove_unused_images(&mut self) {
+    pub fn remove_unused_images(&mut self) -> usize {
+        let size = self.images.len();
         self.images
-            .retain(|_, cached_image| !cached_image.should_purge())
+            .retain(|_, cached_image| !cached_image.should_purge());
+        size - self.images.len()
     }
 }
 

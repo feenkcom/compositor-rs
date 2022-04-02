@@ -1,8 +1,6 @@
-use crate::image_cache::ImageCache;
 use crate::renderers::PictureToRasterize;
-use crate::shadow_cache::ShadowCache;
 use crate::{
-    as_skia_point, into_skia_matrix, into_skia_rect, into_skia_rrect, to_skia_point,
+    as_skia_point, into_skia_matrix, into_skia_rect, into_skia_rrect, to_skia_point, Cache,
     PictureRasterizer, ShadowRasterizer, ShadowToRasterize, SkiaPath,
 };
 use compositor::{
@@ -22,19 +20,16 @@ use std::sync::Arc;
 #[derive(Debug)]
 pub struct SkiaCompositor<'canvas, 'cache> {
     canvas: &'canvas mut Canvas,
-    shadow_cache: &'cache mut ShadowCache,
-    image_cache: &'cache mut ImageCache,
+    cache: &'cache mut Cache,
 }
 
 impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
     fn compose(&mut self, layer: Arc<dyn Layer>) {
-        self.image_cache.mark_images_as_not_used();
-        self.shadow_cache.mark_images_as_not_used();
+        self.cache.mark_images_as_not_used();
 
         layer.compose(self);
 
-        self.image_cache.remove_unused_images();
-        self.shadow_cache.remove_unused_images();
+        self.cache.remove_unused_images();
     }
 
     fn compose_clip(&mut self, layer: &ClipLayer) {
@@ -63,7 +58,7 @@ impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
     fn compose_shadow(&mut self, layer: &ShadowLayer) {
         let canvas = &mut self.canvas;
 
-        match self.shadow_cache.get_shadow_image(layer.shadow()) {
+        match self.cache.get_shadow_image(layer.shadow()) {
             None => {
                 let rasterized_shadow = ShadowRasterizer::new()
                     .rasterize(ShadowToRasterize::new(layer.shadow().clone()), canvas);
@@ -83,8 +78,7 @@ impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
                                 .translate(&layer.shadow().inflation_offset().neg()),
                         );
 
-                        self.shadow_cache
-                            .push_shadow_image(layer.shadow().clone(), image);
+                        self.cache.push_shadow_image(layer.shadow().clone(), image);
                     }
                 }
             }
@@ -120,7 +114,7 @@ impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
     fn compose_picture(&mut self, layer: &PictureLayer) {
         let canvas = &mut self.canvas;
 
-        match self.image_cache.get_picture_image(layer.id()) {
+        match self.cache.get_picture_image(layer.id()) {
             None => {
                 let picture = layer
                     .picture()
@@ -147,11 +141,8 @@ impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
                                 &layer.cull_rect(),
                             );
 
-                            self.image_cache.push_id_image(
-                                layer.id(),
-                                image,
-                                rasterized_picture.matrix,
-                            );
+                            self.cache
+                                .push_id_image(layer.id(), image, rasterized_picture.matrix);
                         }
                     }
                 } else {
@@ -190,16 +181,8 @@ impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
 }
 
 impl<'canvas, 'cache> SkiaCompositor<'canvas, 'cache> {
-    pub fn new(
-        canvas: &'canvas mut Canvas,
-        image_cache: &'cache mut ImageCache,
-        shadow_cache: &'cache mut ShadowCache,
-    ) -> Self {
-        Self {
-            canvas,
-            shadow_cache,
-            image_cache,
-        }
+    pub fn new(canvas: &'canvas mut Canvas, cache: &'cache mut Cache) -> Self {
+        Self { canvas, cache }
     }
 
     /// Draws a given shadow directly on the canvas avoiding caches and rasterization

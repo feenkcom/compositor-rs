@@ -2,7 +2,7 @@ mod driver;
 
 use compositor::{Layer, PictureLayer, TransformationLayer};
 use compositor_skia::{
-    into_compositor_matrix, ImageCache, ShadowCache, SkiaCompositor, SkiaPicture,
+    into_compositor_matrix, Cache, SkiaCompositor, SkiaPicture,
 };
 use skia_safe::{Color, Matrix, Paint, Picture, PictureRecorder, Rect, Size};
 use std::sync::Arc;
@@ -25,13 +25,12 @@ fn main() {
         TransformationLayer::new(into_compositor_matrix(&Matrix::rotate_deg(10.0)))
             .with_layer(Arc::new(picture_layer));
 
-    let mut image_cache = ImageCache::new();
-    let mut shadow_cache = ShadowCache::new();
+    let mut cache = Cache::new();
 
     driver::run(move |canvas| {
         canvas.clear(skia_safe::Color::WHITE);
 
-        let mut compositor = SkiaCompositor::new(canvas, &mut image_cache, &mut shadow_cache);
+        let mut compositor = SkiaCompositor::new(canvas, &mut cache);
 
         transformation_layer.compose(&mut compositor);
     });

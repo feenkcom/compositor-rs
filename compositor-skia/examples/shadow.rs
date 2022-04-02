@@ -1,7 +1,7 @@
 mod driver;
 
 use compositor::{Geometry, Layer, Point, Radius, Rectangle, Shadow, ShadowLayer};
-use compositor_skia::{to_compositor_color, ImageCache, ShadowCache, SkiaCompositor};
+use compositor_skia::{to_compositor_color, Cache, SkiaCompositor};
 
 fn main() {
     env_logger::init();
@@ -15,13 +15,12 @@ fn main() {
 
     let shadow_layer = ShadowLayer::new(shadow);
 
-    let mut image_cache = ImageCache::new();
-    let mut shadow_cache = ShadowCache::new();
+    let mut cache = Cache::new();
 
     driver::run(move |canvas| {
         canvas.clear(skia_safe::Color::WHITE);
 
-        let mut compositor = SkiaCompositor::new(canvas, &mut image_cache, &mut shadow_cache);
+        let mut compositor = SkiaCompositor::new(canvas, &mut cache);
 
         shadow_layer.compose(&mut compositor);
     });
