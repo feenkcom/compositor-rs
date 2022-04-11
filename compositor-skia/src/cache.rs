@@ -1,19 +1,19 @@
+use crate::{ImageCache, ShadowCache};
+use compositor::Shadow;
 use log::info;
 use skia_safe::{Image, Matrix};
-use compositor::Shadow;
-use crate::{ImageCache, ShadowCache};
 
 #[derive(Debug)]
 pub struct Cache {
-    pub (crate) shadow_cache: ShadowCache,
-    pub (crate) image_cache: ImageCache
+    pub(crate) shadow_cache: ShadowCache,
+    pub(crate) image_cache: ImageCache,
 }
 
 impl Cache {
     pub fn new() -> Self {
         Self {
             shadow_cache: ShadowCache::new(),
-            image_cache: ImageCache::new()
+            image_cache: ImageCache::new(),
         }
     }
 
@@ -25,8 +25,16 @@ impl Cache {
     pub fn remove_unused_images(&mut self) {
         let removed_pictures = self.image_cache.remove_unused_images();
         let removed_shadows = self.shadow_cache.remove_unused_images();
-        info!("Removed {} unused cached pictures. {} left.", removed_pictures, self.image_cache.count_cached_images());
-        info!("Removed {} unused cached shadows. {} left.", removed_shadows, self.shadow_cache.count_cached_shadows());
+        info!(
+            "Removed {} unused cached pictures. {} left.",
+            removed_pictures,
+            self.image_cache.count_cached_images()
+        );
+        info!(
+            "Removed {} unused cached shadows. {} left.",
+            removed_shadows,
+            self.shadow_cache.count_cached_shadows()
+        );
     }
 
     pub fn get_shadow_image(&mut self, shadow: &Shadow) -> Option<&Image> {

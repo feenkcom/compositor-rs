@@ -1,4 +1,3 @@
-use crate::skia_compositor::draw_shadow;
 use crate::{as_skia_point, into_skia_rect, RasterizationStats};
 use compositor::Shadow;
 use log::{error, trace};
@@ -7,6 +6,7 @@ use skia_safe::{
 };
 
 use crate::renderers::rasterizer::create_surface;
+use crate::utils::draw_shadow;
 
 #[derive(Debug, Clone)]
 pub struct ShadowToRasterize {

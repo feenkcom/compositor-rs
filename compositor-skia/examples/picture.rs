@@ -1,9 +1,7 @@
 mod driver;
 
 use compositor::{Layer, PictureLayer, TransformationLayer};
-use compositor_skia::{
-    into_compositor_matrix, Cache, SkiaCompositor, SkiaPicture,
-};
+use compositor_skia::{into_compositor_matrix, Cache, SkiaCompositor, SkiaPicture};
 use skia_safe::{Color, Matrix, Paint, Picture, PictureRecorder, Rect, Size};
 use std::sync::Arc;
 

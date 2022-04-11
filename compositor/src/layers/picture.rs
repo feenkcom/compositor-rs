@@ -25,8 +25,8 @@ impl PictureLayer {
         self.picture_id
     }
 
-    pub fn picture(&self) -> &Arc<dyn Picture> {
-        &self.picture
+    pub fn picture(&self) -> Arc<dyn Picture> {
+        self.picture.clone()
     }
 
     pub fn needs_cache(&self) -> bool {
