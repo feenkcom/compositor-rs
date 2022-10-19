@@ -1,4 +1,4 @@
-use boxer::{ValueBox, ValueBoxPointer, ValueBoxPointerReference};
+use boxer::{ValueBox, ValueBoxPointer};
 use compositor::{Circle, Geometry, Path, Point, Radius, Rectangle, RoundedRectangle};
 
 #[no_mangle]
@@ -66,8 +66,8 @@ pub fn compositor_geometry_new_path(mut path: *mut ValueBox<Path>) -> *mut Value
 }
 
 #[no_mangle]
-pub fn compositor_geometry_drop(path: &mut *mut ValueBox<Geometry>) {
-    path.drop();
+pub fn compositor_geometry_drop(path: *mut ValueBox<Geometry>) {
+    path.release();
 }
 
 // #[no_mangle]

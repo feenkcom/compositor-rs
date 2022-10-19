@@ -6,4 +6,4 @@ edition = "2021"
 [dependencies]
 compositor = { path = "../compositor" }
 compositor-skia = { path = "../compositor-skia" }
-boxer = { git = "https://github.com/feenkcom/gtoolkit-boxer", rev = "8ffd345b6aabda55c5ab1b4914f6f3e5f92918d4" }
+boxer = { git = "https://github.com/feenkcom/gtoolkit-boxer", rev = "fdc253f9559acd60e777b0357ec9d6efeff86577" }

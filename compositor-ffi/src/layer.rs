@@ -1,5 +1,5 @@
 use boxer::string::BoxerString;
-use boxer::{ValueBox, ValueBoxPointer, ValueBoxPointerReference};
+use boxer::{ValueBox, ValueBoxPointer};
 use compositor::Layer;
 use std::sync::Arc;
 
@@ -42,8 +42,8 @@ pub fn compositor_layer_count_refs(layer_ptr: *mut ValueBox<Arc<dyn Layer>>) -> 
 }
 
 #[no_mangle]
-pub fn compositor_layer_drop(ptr: &mut *mut ValueBox<Arc<dyn Layer>>) {
-    ptr.drop();
+pub fn compositor_layer_drop(ptr: *mut ValueBox<Arc<dyn Layer>>) {
+    ptr.release();
 }
 
 #[no_mangle]
@@ -64,6 +64,6 @@ pub fn compositor_layers_add(
 }
 
 #[no_mangle]
-pub fn compositor_layers_drop(ptr: &mut *mut ValueBox<Vec<Arc<dyn Layer>>>) {
-    ptr.drop();
+pub fn compositor_layers_drop(ptr: *mut ValueBox<Vec<Arc<dyn Layer>>>) {
+    ptr.release();
 }

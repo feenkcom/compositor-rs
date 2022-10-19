@@ -1,10 +1,12 @@
+use std::sync::Arc;
+
+use boxer::{ValueBox, ValueBoxPointer};
 use boxer::boxes::{ReferenceBox, ReferenceBoxPointer};
-use boxer::{ValueBox, ValueBoxPointer, ValueBoxPointerReference};
+
 use compositor::{Compositor, Layer};
 use compositor_skia::{
-    Cache, Canvas, ImageCache, ShadowCache, SkiaCachelessCompositor, SkiaCompositor,
+    Cache, Canvas, SkiaCachelessCompositor, SkiaCompositor,
 };
-use std::sync::Arc;
 
 #[no_mangle]
 pub fn skia_compositor_compose(
@@ -39,6 +41,6 @@ pub fn skia_compositor_cache_new() -> *mut ValueBox<Cache> {
 }
 
 #[no_mangle]
-pub fn skia_compositor_cache_drop(ptr: &mut *mut ValueBox<Cache>) {
-    ptr.drop();
+pub fn skia_compositor_cache_drop(ptr: *mut ValueBox<Cache>) {
+    ptr.release();
 }

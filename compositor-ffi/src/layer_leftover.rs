@@ -1,4 +1,4 @@
-use boxer::{ValueBox, ValueBoxPointer, ValueBoxPointerReference};
+use boxer::{ValueBox, ValueBoxPointer};
 use compositor::{Geometry, Layer, LeftoverStateLayer, Matrix, Point, StateCommand};
 use std::sync::Arc;
 
@@ -33,8 +33,8 @@ pub fn compositor_leftover_transform_command(
 }
 
 #[no_mangle]
-pub fn compositor_leftover_command_drop(command: &mut *mut ValueBox<StateCommand>) {
-    command.drop();
+pub fn compositor_leftover_command_drop(command: *mut ValueBox<StateCommand>) {
+    command.release();
 }
 
 #[no_mangle]
@@ -55,8 +55,8 @@ pub fn compositor_leftover_commands_add(
 }
 
 #[no_mangle]
-pub fn compositor_leftover_commands_drop(commands: &mut *mut ValueBox<Vec<StateCommand>>) {
-    commands.drop();
+pub fn compositor_leftover_commands_drop(commands: *mut ValueBox<Vec<StateCommand>>) {
+    commands.release();
 }
 
 #[no_mangle]

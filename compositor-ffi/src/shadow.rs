@@ -1,4 +1,5 @@
-use boxer::{ValueBox, ValueBoxPointer, ValueBoxPointerReference};
+use boxer::{ValueBox, ValueBoxPointer};
+
 use compositor::{Color, Geometry, Point, Radius, Shadow};
 
 /// Creates a new shadow consuming the geometry
@@ -23,6 +24,6 @@ pub fn compositor_shadow_new(
 }
 
 #[no_mangle]
-pub fn compositor_shadow_drop(shadow: &mut *mut ValueBox<Shadow>) {
-    shadow.drop()
+pub fn compositor_shadow_drop(shadow: *mut ValueBox<Shadow>) {
+    shadow.release();
 }

@@ -1,8 +1,10 @@
-use boxer::{ValueBox, ValueBoxPointerReference};
-use compositor::Picture;
 use std::sync::Arc;
 
+use boxer::{ValueBox, ValueBoxPointer};
+
+use compositor::Picture;
+
 #[no_mangle]
-pub fn compositor_picture_drop(picture: &mut *mut ValueBox<Arc<dyn Picture>>) {
-    picture.drop()
+pub fn compositor_picture_drop(picture: *mut ValueBox<Arc<dyn Picture>>) {
+    picture.release();
 }

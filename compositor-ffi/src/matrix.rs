@@ -1,5 +1,5 @@
 use boxer::array::BoxerArrayF32;
-use boxer::{ValueBox, ValueBoxPointer, ValueBoxPointerReference};
+use boxer::{ValueBox, ValueBoxPointer};
 use compositor::{Matrix, Scalar};
 
 #[no_mangle]
@@ -13,6 +13,6 @@ pub fn compositor_matrix_new(values: *mut ValueBox<BoxerArrayF32>) -> *mut Value
 }
 
 #[no_mangle]
-pub fn compositor_matrix_drop(matrix: &mut *mut ValueBox<Matrix>) {
-    matrix.drop();
+pub fn compositor_matrix_drop(matrix: *mut ValueBox<Matrix>) {
+    matrix.release();
 }
