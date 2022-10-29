@@ -1,5 +1,5 @@
-use boxer::{ValueBox, ValueBoxPointer};
 use compositor::{Circle, Geometry, Path, Point, Radius, Rectangle, RoundedRectangle};
+use value_box::{ReturnBoxerResult, ValueBox, ValueBoxPointer};
 
 #[no_mangle]
 pub fn compositor_geometry_none() -> *mut ValueBox<Geometry> {
@@ -59,10 +59,10 @@ pub fn compositor_geometry_new_circle(
 
 /// Creates a new geometry from a given path consuming that path
 #[no_mangle]
-pub fn compositor_geometry_new_path(mut path: *mut ValueBox<Path>) -> *mut ValueBox<Geometry> {
-    path.with_not_null_value_consumed_return(std::ptr::null_mut(), |path| {
-        ValueBox::new(Geometry::Path(path)).into_raw()
-    })
+pub fn compositor_geometry_new_path(path: *mut ValueBox<Path>) -> *mut ValueBox<Geometry> {
+    path.take_value()
+        .map(|path| Geometry::Path(path))
+        .into_raw()
 }
 
 #[no_mangle]

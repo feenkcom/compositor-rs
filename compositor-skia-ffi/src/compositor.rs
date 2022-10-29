@@ -1,12 +1,9 @@
+use reference_box::{ReferenceBox, ReferenceBoxPointer};
 use std::sync::Arc;
-
-use boxer::{ValueBox, ValueBoxPointer};
-use boxer::boxes::{ReferenceBox, ReferenceBoxPointer};
+use value_box::{ValueBox, ValueBoxPointer};
 
 use compositor::{Compositor, Layer};
-use compositor_skia::{
-    Cache, Canvas, SkiaCachelessCompositor, SkiaCompositor,
-};
+use compositor_skia::{Cache, Canvas, SkiaCachelessCompositor, SkiaCompositor};
 
 #[no_mangle]
 pub fn skia_compositor_compose(

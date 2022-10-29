@@ -1,6 +1,8 @@
-use boxer::{ValueBox, ValueBoxPointer};
-use compositor::{ClipLayer, Geometry, Layer, Point};
 use std::sync::Arc;
+
+use value_box::{ReturnBoxerResult, ValueBox, ValueBoxPointer};
+
+use compositor::{ClipLayer, Geometry, Layer, Point};
 
 #[no_mangle]
 pub fn compositor_clip_layer_none() -> *mut ValueBox<Arc<dyn Layer>> {
@@ -13,9 +15,11 @@ pub fn compositor_clip_layer_new(
     offset_x: f32,
     offset_y: f32,
 ) -> *mut ValueBox<Arc<dyn Layer>> {
-    geometry.with_not_null_value_return(std::ptr::null_mut(), |geometry| {
-        let layer = ClipLayer::new(geometry, Point::new_f32(offset_x, offset_y));
-
-        ValueBox::new(Arc::new(layer) as Arc<dyn Layer>).into_raw()
-    })
+    geometry
+        .to_ref()
+        .map(|geometry| {
+            let layer = ClipLayer::new(geometry.clone(), Point::new_f32(offset_x, offset_y));
+            Arc::new(layer) as Arc<dyn Layer>
+        })
+        .into_raw()
 }

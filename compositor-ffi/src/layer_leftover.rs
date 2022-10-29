@@ -1,6 +1,6 @@
-use boxer::{ValueBox, ValueBoxPointer};
 use compositor::{Geometry, Layer, LeftoverStateLayer, Matrix, Point, StateCommand};
 use std::sync::Arc;
+use value_box::{ValueBox, ValueBoxPointer};
 
 #[no_mangle]
 pub fn compositor_leftover_clip_command(

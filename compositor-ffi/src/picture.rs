@@ -1,6 +1,5 @@
 use std::sync::Arc;
-
-use boxer::{ValueBox, ValueBoxPointer};
+use value_box::{ValueBox, ValueBoxPointer};
 
 use compositor::Picture;
 

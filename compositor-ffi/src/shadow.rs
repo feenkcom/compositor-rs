@@ -1,6 +1,5 @@
-use boxer::{ValueBox, ValueBoxPointer};
-
 use compositor::{Color, Geometry, Point, Radius, Shadow};
+use value_box::{ValueBox, ValueBoxPointer};
 
 /// Creates a new shadow consuming the geometry
 #[no_mangle]

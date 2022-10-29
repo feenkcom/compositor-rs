@@ -1,6 +1,6 @@
-use boxer::{ValueBox, ValueBoxPointer};
 use compositor::{Layer, Matrix, TransformationLayer};
 use std::sync::Arc;
+use value_box::{ValueBox, ValueBoxPointer};
 
 #[no_mangle]
 pub fn compositor_transformation_layer_new(

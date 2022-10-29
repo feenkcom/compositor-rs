@@ -1,6 +1,6 @@
-use boxer::{ValueBox, ValueBoxPointer};
 use compositor::{Layer, OffsetLayer, Point};
 use std::sync::Arc;
+use value_box::{ValueBox, ValueBoxPointer};
 
 #[no_mangle]
 pub fn compositor_offset_layer_new() -> *mut ValueBox<Arc<dyn Layer>> {

@@ -1,6 +1,8 @@
-use boxer::{ValueBox, ValueBoxPointer};
-use compositor::{Layer, Shadow, ShadowLayer};
 use std::sync::Arc;
+
+use value_box::{ValueBox, ValueBoxPointer};
+
+use compositor::{Layer, Shadow, ShadowLayer};
 
 #[no_mangle]
 pub fn compositor_shadow_layer_new(
