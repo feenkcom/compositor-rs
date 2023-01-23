@@ -6,5 +6,5 @@ edition = "2021"
 [dependencies]
 compositor = { path = "../compositor" }
 compositor-skia = { path = "../compositor-skia" }
-value-box = "1.0"
+value-box = { version = "2.1", features = [ "phlow" ] }
 reference-box = "1.0"

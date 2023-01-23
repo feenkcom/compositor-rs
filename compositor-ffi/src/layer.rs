@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use string_box::StringBox;
-use value_box::{ValueBox, ValueBoxPointer};
+use value_box::{ReturnBoxerResult, ValueBox, ValueBoxPointer};
 
 use compositor::Layer;
 
@@ -25,11 +25,9 @@ pub fn compositor_layer_with_layers(
     layer: *mut ValueBox<Arc<dyn Layer>>,
     mut layers: *mut ValueBox<Vec<Arc<dyn Layer>>>,
 ) -> *mut ValueBox<Arc<dyn Layer>> {
-    layer.with_not_null_return(std::ptr::null_mut(), |layer| {
-        layers.with_not_null_value_consumed_return(std::ptr::null_mut(), |layers| {
-            ValueBox::new(layer.with_layers(layers)).into_raw()
-        })
-    })
+    layer
+        .with_ref(|layer| layers.take_value().map(|layers| layer.with_layers(layers)))
+        .into_raw()
 }
 
 #[no_mangle]

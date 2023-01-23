@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use value_box::{ValueBox, ValueBoxPointer};
+use value_box::{ReturnBoxerResult, ValueBox, ValueBoxPointer};
 
 use compositor::{Layer, Shadow, ShadowLayer};
 
@@ -8,7 +8,8 @@ use compositor::{Layer, Shadow, ShadowLayer};
 pub fn compositor_shadow_layer_new(
     mut shadow: *mut ValueBox<Shadow>,
 ) -> *mut ValueBox<Arc<dyn Layer>> {
-    shadow.with_not_null_value_consumed_return(std::ptr::null_mut(), |shadow| {
-        ValueBox::new(Arc::new(ShadowLayer::new(shadow)) as Arc<dyn Layer>).into_raw()
-    })
+    shadow
+        .take_value()
+        .map(|shadow| Arc::new(ShadowLayer::new(shadow)) as Arc<dyn Layer>)
+        .into_raw()
 }

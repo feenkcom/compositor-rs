@@ -1,12 +1,13 @@
 use compositor::{Layer, Matrix, TransformationLayer};
 use std::sync::Arc;
-use value_box::{ValueBox, ValueBoxPointer};
+use value_box::{ReturnBoxerResult, ValueBox, ValueBoxPointer};
 
 #[no_mangle]
 pub fn compositor_transformation_layer_new(
     mut matrix: *mut ValueBox<Matrix>,
 ) -> *mut ValueBox<Arc<dyn Layer>> {
-    matrix.with_not_null_value_consumed_return(std::ptr::null_mut(), |matrix| {
-        ValueBox::new(Arc::new(TransformationLayer::new(matrix)) as Arc<dyn Layer>).into_raw()
-    })
+    matrix
+        .take_value()
+        .map(|matrix| Arc::new(TransformationLayer::new(matrix)) as Arc<dyn Layer>)
+        .into_raw()
 }

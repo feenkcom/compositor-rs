@@ -16,9 +16,8 @@ pub fn compositor_clip_layer_new(
     offset_y: f32,
 ) -> *mut ValueBox<Arc<dyn Layer>> {
     geometry
-        .to_ref()
-        .map(|geometry| {
-            let layer = ClipLayer::new(geometry.clone(), Point::new_f32(offset_x, offset_y));
+        .with_clone_ok(|geometry| {
+            let layer = ClipLayer::new(geometry, Point::new_f32(offset_x, offset_y));
             Arc::new(layer) as Arc<dyn Layer>
         })
         .into_raw()
