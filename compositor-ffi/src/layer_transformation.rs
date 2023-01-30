@@ -4,7 +4,7 @@ use value_box::{ReturnBoxerResult, ValueBox, ValueBoxPointer};
 
 #[no_mangle]
 pub fn compositor_transformation_layer_new(
-    mut matrix: *mut ValueBox<Matrix>,
+    matrix: *mut ValueBox<Matrix>,
 ) -> *mut ValueBox<Arc<dyn Layer>> {
     matrix
         .take_value()

@@ -1,26 +1,29 @@
 use compositor::{Layer, Picture, PictureLayer};
 use std::sync::Arc;
-use value_box::{ValueBox, ValueBoxPointer};
+use value_box::{ReturnBoxerResult, ValueBox, ValueBoxPointer};
 
 #[no_mangle]
 pub fn compositor_picture_layer_new(
     picture: *mut ValueBox<Arc<dyn Picture>>,
     needs_cache: bool,
 ) -> *mut ValueBox<Arc<dyn Layer>> {
-    picture.with_not_null_value_return(std::ptr::null_mut(), |picture| {
-        ValueBox::new(Arc::new(PictureLayer::new(picture, needs_cache)) as Arc<dyn Layer>)
-            .into_raw()
-    })
+    picture
+        .with_clone_ok(|picture| {
+            Arc::new(PictureLayer::new(picture, needs_cache)) as Arc<dyn Layer>
+        })
+        .into_raw()
 }
 
 #[no_mangle]
 pub fn compositor_picture_layer_needs_cache(layer: *mut ValueBox<Arc<dyn Layer>>) -> bool {
-    layer.with_not_null_value_return(false, |layer| {
-        let picture_layer = layer
-            .any()
-            .downcast_ref::<PictureLayer>()
-            .expect("Is not an offset layer!");
+    layer
+        .with_ref_ok(|layer| {
+            let picture_layer = layer
+                .any()
+                .downcast_ref::<PictureLayer>()
+                .expect("Is not an offset layer!");
 
-        picture_layer.needs_cache()
-    })
+            picture_layer.needs_cache()
+        })
+        .or_log(false)
 }

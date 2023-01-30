@@ -1,6 +1,6 @@
 use compositor::{Layer, OffsetLayer, Point};
 use std::sync::Arc;
-use value_box::{ValueBox, ValueBoxPointer};
+use value_box::{ReturnBoxerResult, ValueBox, ValueBoxPointer};
 
 #[no_mangle]
 pub fn compositor_offset_layer_new() -> *mut ValueBox<Arc<dyn Layer>> {
@@ -19,36 +19,41 @@ pub fn compositor_offset_layer_with_point(
     x: f32,
     y: f32,
 ) -> *mut ValueBox<Arc<dyn Layer>> {
-    layer.with_not_null_return(std::ptr::null_mut(), |layer| {
-        let offset_layer = layer
-            .any()
-            .downcast_ref::<OffsetLayer>()
-            .expect("Is not an offset layer!");
-        ValueBox::new(Arc::new(offset_layer.with_offset(Point::new_f32(x, y))) as Arc<dyn Layer>)
-            .into_raw()
-    })
+    layer
+        .with_ref_ok(|layer| {
+            let offset_layer = layer
+                .any()
+                .downcast_ref::<OffsetLayer>()
+                .expect("Is not an offset layer!");
+            Arc::new(offset_layer.with_offset(Point::new_f32(x, y))) as Arc<dyn Layer>
+        })
+        .into_raw()
 }
 
 #[no_mangle]
 pub fn compositor_offset_layer_get_x(layer: *mut ValueBox<Arc<dyn Layer>>) -> f32 {
-    layer.with_not_null_value_return(0.0, |layer| {
-        let offset_layer = layer
-            .any()
-            .downcast_ref::<OffsetLayer>()
-            .expect("Is not an offset layer!");
+    layer
+        .with_ref_ok(|layer| {
+            let offset_layer = layer
+                .any()
+                .downcast_ref::<OffsetLayer>()
+                .expect("Is not an offset layer!");
 
-        offset_layer.offset().x().into()
-    })
+            offset_layer.offset().x().into()
+        })
+        .or_log(0.0)
 }
 
 #[no_mangle]
 pub fn compositor_offset_layer_get_y(layer: *mut ValueBox<Arc<dyn Layer>>) -> f32 {
-    layer.with_not_null_value_return(0.0, |layer| {
-        let offset_layer = layer
-            .any()
-            .downcast_ref::<OffsetLayer>()
-            .expect("Is not an offset layer!");
+    layer
+        .with_ref_ok(|layer| {
+            let offset_layer = layer
+                .any()
+                .downcast_ref::<OffsetLayer>()
+                .expect("Is not an offset layer!");
 
-        offset_layer.offset().y().into()
-    })
+            offset_layer.offset().y().into()
+        })
+        .or_log(0.0)
 }

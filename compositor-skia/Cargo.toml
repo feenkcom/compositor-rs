@@ -1,16 +1,16 @@
 [package]
 name = "compositor-skia"
-version = "1.7.0"
+version = "2.0.0"
 edition = "2021"
 
 [dependencies]
 compositor = { path = "../compositor" }
-skia-safe = { version = ">=0.55.0" }
+skia-safe = { version = ">=0.58" }
 log = "0.4"
 
 [dev-dependencies]
-winit = "0.26.1"
-env_logger = { version = "0.9.0", features = [ "termcolor" ] }
+winit = "0.27.5"
+env_logger = { version = "0.10", features = [ "color" ] }
 
 [features]
 gpu = [ "skia-safe/gpu" ]
@@ -18,7 +18,7 @@ metal = [ "gpu", "skia-safe/metal" ]
 
 # examples
 [target.'cfg(target_os = "macos")'.dev-dependencies]
-metal-rs = { package = "metal", version = "0.23.1" }
+metal-rs = { package = "metal", version = "0.24" }
 objc = "0.2.7"
 cocoa = "0.24.0"
 core-graphics-types = "0.1.1"

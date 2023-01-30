@@ -9,7 +9,7 @@ pub fn compositor_shadow_new(
     sigma_y: f32,
     delta_x: f32,
     delta_y: f32,
-    mut geometry: *mut ValueBox<Geometry>,
+    geometry: *mut ValueBox<Geometry>,
 ) -> *mut ValueBox<Shadow> {
     geometry
         .take_value()

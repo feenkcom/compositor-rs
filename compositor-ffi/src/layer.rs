@@ -6,24 +6,22 @@ use compositor::Layer;
 
 #[no_mangle]
 pub fn compositor_layer_clone(
-    layer_ptr: *mut ValueBox<Arc<dyn Layer>>,
+    layer: *mut ValueBox<Arc<dyn Layer>>,
 ) -> *mut ValueBox<Arc<dyn Layer>> {
-    layer_ptr.with_not_null_return(std::ptr::null_mut(), |layer| {
-        ValueBox::new(layer.clone_arc()).into_raw()
-    })
+    layer.with_ref_ok(|layer| layer.clone_arc()).into_raw()
 }
 
 #[no_mangle]
 pub fn compositor_layer_debug(layer: *mut ValueBox<Arc<dyn Layer>>) -> *mut ValueBox<StringBox> {
-    layer.with_not_null_return(std::ptr::null_mut(), |layer| {
-        ValueBox::new(StringBox::from_string(format!("{:#?}", layer))).into_raw()
-    })
+    layer
+        .with_ref_ok(|layer| StringBox::from_string(format!("{:#?}", layer)))
+        .into_raw()
 }
 
 #[no_mangle]
 pub fn compositor_layer_with_layers(
     layer: *mut ValueBox<Arc<dyn Layer>>,
-    mut layers: *mut ValueBox<Vec<Arc<dyn Layer>>>,
+    layers: *mut ValueBox<Vec<Arc<dyn Layer>>>,
 ) -> *mut ValueBox<Arc<dyn Layer>> {
     layer
         .with_ref(|layer| layers.take_value().map(|layers| layer.with_layers(layers)))
@@ -32,12 +30,16 @@ pub fn compositor_layer_with_layers(
 
 #[no_mangle]
 pub fn compositor_layer_count_layers(layer_ptr: *mut ValueBox<Arc<dyn Layer>>) -> usize {
-    layer_ptr.with_not_null_value_return(0, |layer| layer.count_layers())
+    layer_ptr
+        .with_ref_ok(|layer| layer.count_layers())
+        .or_log(0)
 }
 
 #[no_mangle]
 pub fn compositor_layer_count_refs(layer_ptr: *mut ValueBox<Arc<dyn Layer>>) -> usize {
-    layer_ptr.with_not_null_value_return(0, |layer| Arc::strong_count(&layer) - 1)
+    layer_ptr
+        .with_ref_ok(|layer| Arc::strong_count(&layer) - 1)
+        .or_log(0)
 }
 
 #[no_mangle]
@@ -55,11 +57,13 @@ pub fn compositor_layers_add(
     layers: *mut ValueBox<Vec<Arc<dyn Layer>>>,
     layer: *mut ValueBox<Arc<dyn Layer>>,
 ) {
-    layers.with_not_null(|layers| {
-        layer.with_not_null_value(|layer| {
-            layers.push(layer);
+    layers
+        .with_mut(|layers| {
+            layer.with_clone_ok(|layer| {
+                layers.push(layer);
+            })
         })
-    })
+        .log();
 }
 
 #[no_mangle]

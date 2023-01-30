@@ -1,10 +1,10 @@
 [package]
 name = "compositor-skia-ffi"
-version = "1.7.0"
+version = "2.0.0"
 edition = "2021"
 
 [dependencies]
 compositor = { path = "../compositor" }
 compositor-skia = { path = "../compositor-skia" }
-value-box = { version = "2.1", features = [ "phlow" ] }
+value-box = { version = "2", features = [ "phlow" ] }
 reference-box = "1.0"

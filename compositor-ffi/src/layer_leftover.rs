@@ -16,7 +16,7 @@ pub fn compositor_leftover_clip_command(
 
 #[no_mangle]
 pub fn compositor_leftover_transform_command(
-    mut matrix: *mut ValueBox<Matrix>,
+    matrix: *mut ValueBox<Matrix>,
     offset_x: f32,
     offset_y: f32,
 ) -> *mut ValueBox<StateCommand> {
@@ -39,7 +39,7 @@ pub fn compositor_leftover_commands_new() -> *mut ValueBox<Vec<StateCommand>> {
 #[no_mangle]
 pub fn compositor_leftover_commands_add(
     commands: *mut ValueBox<Vec<StateCommand>>,
-    mut command: *mut ValueBox<StateCommand>,
+    command: *mut ValueBox<StateCommand>,
 ) {
     commands
         .with_mut(|commands| {
