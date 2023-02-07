@@ -1,5 +1,6 @@
+use value_box::{ValueBox, ValueBoxIntoRaw, ValueBoxPointer};
+
 use compositor::{Circle, Geometry, Path, Point, Radius, Rectangle, RoundedRectangle};
-use value_box::{ReturnBoxerResult, ValueBox, ValueBoxPointer};
 
 #[no_mangle]
 pub fn compositor_geometry_none() -> *mut ValueBox<Geometry> {
@@ -61,7 +62,7 @@ pub fn compositor_geometry_new_circle(
 #[no_mangle]
 pub fn compositor_geometry_new_path(path: *mut ValueBox<Path>) -> *mut ValueBox<Geometry> {
     path.take_value()
-        .map(|path| Geometry::Path(path))
+        .map(|path| ValueBox::new(Geometry::Path(path)))
         .into_raw()
 }
 

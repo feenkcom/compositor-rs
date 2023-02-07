@@ -1,6 +1,6 @@
 use compositor::{Layer, Picture, PictureLayer};
 use std::sync::Arc;
-use value_box::{ReturnBoxerResult, ValueBox, ValueBoxPointer};
+use value_box::{ReturnBoxerResult, ValueBox, ValueBoxIntoRaw, ValueBoxPointer};
 
 #[no_mangle]
 pub fn compositor_picture_layer_new(
@@ -9,7 +9,7 @@ pub fn compositor_picture_layer_new(
 ) -> *mut ValueBox<Arc<dyn Layer>> {
     picture
         .with_clone_ok(|picture| {
-            Arc::new(PictureLayer::new(picture, needs_cache)) as Arc<dyn Layer>
+            ValueBox::new(Arc::new(PictureLayer::new(picture, needs_cache)) as Arc<dyn Layer>)
         })
         .into_raw()
 }

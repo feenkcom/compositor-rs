@@ -1,6 +1,6 @@
 use compositor::{Layer, OffsetLayer, Point};
 use std::sync::Arc;
-use value_box::{ReturnBoxerResult, ValueBox, ValueBoxPointer};
+use value_box::{ReturnBoxerResult, ValueBox, ValueBoxIntoRaw, ValueBoxPointer};
 
 #[no_mangle]
 pub fn compositor_offset_layer_new() -> *mut ValueBox<Arc<dyn Layer>> {
@@ -25,7 +25,7 @@ pub fn compositor_offset_layer_with_point(
                 .any()
                 .downcast_ref::<OffsetLayer>()
                 .expect("Is not an offset layer!");
-            Arc::new(offset_layer.with_offset(Point::new_f32(x, y))) as Arc<dyn Layer>
+            ValueBox::new(Arc::new(offset_layer.with_offset(Point::new_f32(x, y))) as Arc<dyn Layer>)
         })
         .into_raw()
 }

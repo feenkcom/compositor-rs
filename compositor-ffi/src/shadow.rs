@@ -1,5 +1,5 @@
 use compositor::{Color, Geometry, Point, Radius, Shadow};
-use value_box::{ReturnBoxerResult, ValueBox, ValueBoxPointer};
+use value_box::{ValueBox, ValueBoxIntoRaw, ValueBoxPointer};
 
 /// Creates a new shadow consuming the geometry
 #[no_mangle]
@@ -20,7 +20,7 @@ pub fn compositor_shadow_new(
                 Point::new_f32(delta_x, delta_y),
                 geometry,
             );
-            shadow
+            ValueBox::new(shadow)
         })
         .into_raw()
 }

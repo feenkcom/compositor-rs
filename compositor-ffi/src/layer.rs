@@ -1,6 +1,7 @@
 use std::sync::Arc;
+
 use string_box::StringBox;
-use value_box::{ReturnBoxerResult, ValueBox, ValueBoxPointer};
+use value_box::{ReturnBoxerResult, ValueBox, ValueBoxIntoRaw, ValueBoxPointer};
 
 use compositor::Layer;
 
@@ -8,13 +9,15 @@ use compositor::Layer;
 pub fn compositor_layer_clone(
     layer: *mut ValueBox<Arc<dyn Layer>>,
 ) -> *mut ValueBox<Arc<dyn Layer>> {
-    layer.with_ref_ok(|layer| layer.clone_arc()).into_raw()
+    layer
+        .with_ref_ok(|layer| ValueBox::new(layer.clone_arc()))
+        .into_raw()
 }
 
 #[no_mangle]
 pub fn compositor_layer_debug(layer: *mut ValueBox<Arc<dyn Layer>>) -> *mut ValueBox<StringBox> {
     layer
-        .with_ref_ok(|layer| StringBox::from_string(format!("{:#?}", layer)))
+        .with_ref_ok(|layer| ValueBox::new(StringBox::from_string(format!("{:#?}", layer))))
         .into_raw()
 }
 
@@ -24,7 +27,11 @@ pub fn compositor_layer_with_layers(
     layers: *mut ValueBox<Vec<Arc<dyn Layer>>>,
 ) -> *mut ValueBox<Arc<dyn Layer>> {
     layer
-        .with_ref(|layer| layers.take_value().map(|layers| layer.with_layers(layers)))
+        .with_ref(|layer| {
+            layers
+                .take_value()
+                .map(|layers| ValueBox::new(layer.with_layers(layers)))
+        })
         .into_raw()
 }
 

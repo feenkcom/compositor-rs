@@ -1,5 +1,5 @@
 use array_box::ArrayBox;
-use value_box::{ReturnBoxerResult, ValueBox, ValueBoxPointer};
+use value_box::{ValueBox, ValueBoxIntoRaw, ValueBoxPointer};
 
 use compositor::{Matrix, Scalar};
 
@@ -9,7 +9,7 @@ pub fn compositor_matrix_new(values: *mut ValueBox<ArrayBox<f32>>) -> *mut Value
         let buffer: &mut [f32; 9] = values.to_slice().try_into().unwrap();
         let buffer = &unsafe { *(buffer as *const [f32; 9] as *const [Scalar; 9]) };
 
-        Matrix::from_9(buffer.clone())
+        ValueBox::new(Matrix::from_9(buffer.clone()))
     }).into_raw()
 }
 
