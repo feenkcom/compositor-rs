@@ -10,6 +10,8 @@ pub fn skia_compositor_picture_new(
     picture: *mut ValueBox<compositor_skia::Picture>,
 ) -> *mut ValueBox<Arc<dyn Picture>> {
     picture
-        .with_clone_ok(|picture| ValueBox::new(Arc::new(SkiaPicture::new(picture)) as Arc<dyn Picture>))
+        .with_clone_ok(|picture| {
+            ValueBox::new(Arc::new(SkiaPicture::new(picture)) as Arc<dyn Picture>)
+        })
         .into_raw()
 }

@@ -10,7 +10,12 @@ pub fn compositor_leftover_clip_command(
 ) -> *mut ValueBox<StateCommand> {
     geometry
         .take_value()
-        .map(|geometry| ValueBox::new(StateCommand::clip(geometry, Point::new_f32(offset_x, offset_y))))
+        .map(|geometry| {
+            ValueBox::new(StateCommand::clip(
+                geometry,
+                Point::new_f32(offset_x, offset_y),
+            ))
+        })
         .into_raw()
 }
 
@@ -22,7 +27,12 @@ pub fn compositor_leftover_transform_command(
 ) -> *mut ValueBox<StateCommand> {
     matrix
         .take_value()
-        .map(|geometry| ValueBox::new(StateCommand::transform(geometry, Point::new_f32(offset_x, offset_y))))
+        .map(|geometry| {
+            ValueBox::new(StateCommand::transform(
+                geometry,
+                Point::new_f32(offset_x, offset_y),
+            ))
+        })
         .into_raw()
 }
 
@@ -61,6 +71,8 @@ pub fn compositor_leftover_layer_new(
 ) -> *mut ValueBox<Arc<dyn Layer>> {
     commands
         .take_value()
-        .map(|commands| ValueBox::new(Arc::new(LeftoverStateLayer::new(commands)) as Arc<dyn Layer>))
+        .map(
+            |commands| ValueBox::new(Arc::new(LeftoverStateLayer::new(commands)) as Arc<dyn Layer>),
+        )
         .into_raw()
 }

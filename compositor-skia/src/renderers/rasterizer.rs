@@ -3,7 +3,7 @@ use crate::{
     RasterizerSurfaceType, ShadowRasterizer, ShadowToRasterize,
 };
 use log::error;
-use skia_safe::{Canvas, ImageInfo, Surface};
+use skia_safe::{surfaces, Canvas, ImageInfo, Surface};
 
 pub trait Rasterizer {
     fn rasterize_picture(
@@ -106,7 +106,7 @@ pub(crate) fn create_surface(
     let surface = match surface {
         None => {
             let cpu_surface_time = std::time::Instant::now();
-            match Surface::new_raster(&image_info, None, None) {
+            match surfaces::raster(&image_info, None, None) {
                 None => {
                     error!(
                         "Could not create CPU surface of size {:?}",

@@ -11,7 +11,7 @@ use skia_safe::{
 };
 
 pub(crate) fn clip_canvas(
-    canvas: &mut Canvas,
+    canvas: &Canvas,
     geometry: &Geometry,
     offset: Option<&compositor::Point>,
 ) {
@@ -62,7 +62,7 @@ pub(crate) fn clip_canvas(
 
 /// Draw a given image with the following matrix
 pub(crate) fn draw_image(
-    canvas: &mut Canvas,
+    canvas: &Canvas,
     image: &Image,
     matrix: &Matrix,
     cull_rectangle: &Rectangle,
@@ -92,7 +92,7 @@ pub(crate) fn draw_image(
     canvas.restore();
 }
 
-pub(crate) fn draw_shadow(canvas: &mut Canvas, shadow: &Shadow, offset: Point) {
+pub(crate) fn draw_shadow(canvas: &Canvas, shadow: &Shadow, offset: Point) {
     trace!("Draw {:?}", shadow);
 
     let shadow_offset: Vector = offset + to_skia_point(shadow.inflation_offset());
@@ -118,7 +118,7 @@ pub(crate) fn draw_shadow(canvas: &mut Canvas, shadow: &Shadow, offset: Point) {
     draw_geometry(canvas, shadow.geometry(), &shadow_paint);
 }
 
-pub(crate) fn draw_geometry(canvas: &mut Canvas, geometry: &Geometry, paint: &Paint) {
+pub(crate) fn draw_geometry(canvas: &Canvas, geometry: &Geometry, paint: &Paint) {
     match geometry {
         Geometry::None => {}
         Geometry::Rectangle(rectangle) => {

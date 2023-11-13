@@ -1,11 +1,11 @@
 [package]
 name = "compositor-skia"
-version = "2.0.0"
+version = "2.1.0"
 edition = "2021"
 
 [dependencies]
 compositor = { path = "../compositor" }
-skia-safe = { version = ">=0.58" }
+skia-safe = { version = ">=0.68" }
 log = "0.4"
 
 [dev-dependencies]
