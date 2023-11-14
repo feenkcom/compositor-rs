@@ -61,7 +61,7 @@ impl Rasterizer for SyncRasterizer {
 
 #[allow(unused_variables)]
 pub(crate) fn create_surface(
-    canvas: &mut Canvas,
+    canvas: &Canvas,
     stats: &mut RasterizationStats,
     image_info: &ImageInfo,
 ) -> Option<Surface> {

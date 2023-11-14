@@ -9,7 +9,7 @@ use std::sync::Arc;
 
 #[derive(Debug)]
 pub struct SkiaCachelessCompositor<'canvas> {
-    canvas: &'canvas mut Canvas,
+    canvas: &'canvas Canvas,
 }
 
 impl<'canvas> Compositor for SkiaCachelessCompositor<'canvas> {
@@ -95,7 +95,7 @@ impl<'canvas> Compositor for SkiaCachelessCompositor<'canvas> {
 }
 
 impl<'canvas> SkiaCachelessCompositor<'canvas> {
-    pub fn new(canvas: &'canvas mut Canvas) -> Self {
+    pub fn new(canvas: &'canvas Canvas) -> Self {
         Self { canvas }
     }
 

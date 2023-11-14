@@ -93,7 +93,7 @@ impl PictureRasterizer {
     pub fn rasterize(
         &self,
         picture_to_rasterize: PictureToRasterize,
-        canvas: &mut Canvas,
+        canvas: &Canvas,
     ) -> RasterizedPicture {
         let device_bounds = picture_to_rasterize.device_bounds();
         let picture = &picture_to_rasterize.picture;

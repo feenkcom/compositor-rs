@@ -61,7 +61,7 @@ impl ShadowRasterizer {
     pub fn rasterize(
         &self,
         shadow_to_rasterize: ShadowToRasterize,
-        canvas: &mut Canvas,
+        canvas: &Canvas,
     ) -> RasterizedShadow {
         trace!(
             "Rasterize shadow with bounds = {:?}, cull rectangle = {:?}",
