@@ -2,9 +2,9 @@ use crate::utils::{clip_canvas, draw_shadow};
 use crate::{as_skia_point, into_skia_matrix, to_skia_point};
 use compositor::{
     ClipLayer, Compositor, Layer, LeftoverStateLayer, OffsetLayer, PictureLayer, Shadow,
-    ShadowLayer, StateCommandType, TransformationLayer,
+    ShadowLayer, StateCommandType, TiledLayer, TransformationLayer,
 };
-use skia_safe::{Canvas, Vector};
+use skia_safe::{Canvas, Color4f, Paint, Rect, Vector};
 use std::sync::Arc;
 
 #[derive(Debug)]
@@ -91,6 +91,22 @@ impl<'canvas> Compositor for SkiaCachelessCompositor<'canvas> {
         }
 
         self.canvas.restore_to_count(count);
+    }
+
+    fn compose_tiled(&mut self, layer: &TiledLayer) {
+        let offset = layer.canvas_offset();
+
+        self.canvas.save();
+        self.canvas
+            .translate(Vector::new(offset.x().into(), offset.y().into()));
+
+        for figure in layer.visible_figures() {
+            if let Some(picture) = figure.picture() {
+                self.compose(Arc::new(picture));
+            }
+        }
+
+        self.canvas.restore();
     }
 }
 

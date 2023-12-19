@@ -61,13 +61,14 @@ pub struct Shadow {
 
 impl Shadow {
     pub fn new(color: Color, radius: Radius, offset: Point, geometry: Geometry) -> Self {
-        let mut shadow = Self {
-            color,
-            radius,
-            offset,
-            geometry,
-            hash: None,
-        };
+        let mut shadow =
+            Self {
+                color,
+                radius,
+                offset,
+                geometry,
+                hash: None,
+            };
         shadow.hash = Some(shadow.compute_default_hash());
         shadow
     }
@@ -95,8 +96,8 @@ impl Shadow {
     }
 
     pub fn inflation_offset(&self) -> Point {
-        let inflation_x = self.radius.width() * 3.0.into();
-        let inflation_y = self.radius.height() * 3.0.into();
+        let inflation_x = self.radius.width() * 3.0;
+        let inflation_y = self.radius.height() * 3.0;
         Point::new_f32(inflation_x.into(), inflation_y.into())
     }
 

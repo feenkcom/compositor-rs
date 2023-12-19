@@ -54,13 +54,14 @@ where
 
     let command_queue = device.new_command_queue();
 
-    let backend = unsafe {
-        mtl::BackendContext::new(
-            device.as_ptr() as mtl::Handle,
-            command_queue.as_ptr() as mtl::Handle,
-            std::ptr::null(),
-        )
-    };
+    let backend =
+        unsafe {
+            mtl::BackendContext::new(
+                device.as_ptr() as mtl::Handle,
+                command_queue.as_ptr() as mtl::Handle,
+                std::ptr::null(),
+            )
+        };
 
     let mut context = DirectContext::new_metal(&backend, None).unwrap();
 

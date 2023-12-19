@@ -9,8 +9,9 @@ pub fn compositor_offset_layer_new() -> *mut ValueBox<Arc<dyn Layer>> {
 
 #[no_mangle]
 pub fn compositor_offset_layer_new_point(x: f32, y: f32) -> *mut ValueBox<Arc<dyn Layer>> {
-    ValueBox::new(Arc::new(OffsetLayer::new_offset(Point::new_f32(x, y))) as Arc<dyn Layer>)
-        .into_raw()
+    ValueBox::new(Arc::new(OffsetLayer::new_offset(Point::new_f32(x, y)))
+        as Arc<dyn Layer>)
+    .into_raw()
 }
 
 #[no_mangle]
@@ -25,7 +26,8 @@ pub fn compositor_offset_layer_with_point(
                 .any()
                 .downcast_ref::<OffsetLayer>()
                 .expect("Is not an offset layer!");
-            ValueBox::new(Arc::new(offset_layer.with_offset(Point::new_f32(x, y))) as Arc<dyn Layer>)
+            ValueBox::new(Arc::new(offset_layer.with_offset(Point::new_f32(x, y)))
+                as Arc<dyn Layer>)
         })
         .into_raw()
 }

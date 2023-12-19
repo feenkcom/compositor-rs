@@ -1,10 +1,10 @@
-use euclid::{Point2D, Size2D, Vector2D};
-use ordered_float::OrderedFloat;
 use std::any::Any;
 use std::collections::hash_map::DefaultHasher;
-use std::fmt::Debug;
+use std::fmt::{Debug, Display, Formatter};
 use std::hash::{Hash, Hasher};
-use std::ops::{Add, Neg};
+use std::ops::{Add, Div, Neg, Sub};
+
+use ordered_float::OrderedFloat;
 
 pub type Scalar = OrderedFloat<f32>;
 
@@ -13,8 +13,12 @@ pub type Scalar = OrderedFloat<f32>;
 pub struct Rectangle(euclid::Rect<Scalar, Scalar>);
 
 #[repr(transparent)]
-#[derive(Debug, Clone, Hash, Eq, PartialEq, Default)]
+#[derive(Debug, Clone, Copy, Hash, Eq, PartialEq, Default)]
 pub struct Point(euclid::Point2D<Scalar, Scalar>);
+
+#[repr(transparent)]
+#[derive(Debug, Clone, Copy, Hash, Eq, PartialEq, Default)]
+pub struct Extent(euclid::Size2D<Scalar, Scalar>);
 
 #[repr(transparent)]
 #[derive(Debug, Clone, Hash, Eq, PartialEq, Default)]
@@ -100,8 +104,8 @@ impl Circle {
         Rectangle::new(
             self.center.x() - self.radius,
             self.center.y() - self.radius,
-            self.radius * 2.0.into(),
-            self.radius * 2.0.into(),
+            self.radius * 2.0,
+            self.radius * 2.0,
         )
     }
 
@@ -176,26 +180,6 @@ impl Point {
     }
 }
 
-impl Neg for Point {
-    type Output = Self;
-
-    fn neg(self) -> Self {
-        Self::new(self.x().neg(), self.y().neg())
-    }
-}
-
-impl From<Point> for Vector2D<Scalar, Scalar> {
-    fn from(point: Point) -> Self {
-        Vector2D::new(point.x(), point.y())
-    }
-}
-
-impl From<&Point> for Vector2D<Scalar, Scalar> {
-    fn from(point: &Point) -> Self {
-        Vector2D::new(point.x(), point.y())
-    }
-}
-
 impl Add for Point {
     type Output = Point;
 
@@ -204,11 +188,131 @@ impl Add for Point {
     }
 }
 
+impl Sub for Point {
+    type Output = Point;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Self::new(self.x() - rhs.x(), self.y() - rhs.y())
+    }
+}
+
 impl Add for &Point {
     type Output = Point;
 
-    fn add(self, rhs: &Point) -> Self::Output {
+    fn add(self, rhs: Self) -> Self::Output {
         Point::new(self.x() + rhs.x(), self.y() + rhs.y())
+    }
+}
+
+impl Neg for Point {
+    type Output = Self;
+
+    fn neg(self) -> Self {
+        Self::new(self.x().neg(), self.y().neg())
+    }
+}
+
+impl Display for Point {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({}, {})", self.x(), self.y())
+    }
+}
+
+impl rstar::Point for Point {
+    type Scalar = Scalar;
+    const DIMENSIONS: usize = 2;
+
+    fn generate(mut generator: impl FnMut(usize) -> Self::Scalar) -> Self {
+        Self::new(generator(0), generator(1))
+    }
+
+    fn nth(&self, index: usize) -> Self::Scalar {
+        match index {
+            0 => self.0.x,
+            1 => self.0.y,
+            _ => unreachable!(),
+        }
+    }
+
+    fn nth_mut(&mut self, index: usize) -> &mut Self::Scalar {
+        match index {
+            0 => &mut self.0.x,
+            1 => &mut self.0.y,
+            _ => unreachable!(),
+        }
+    }
+}
+
+impl From<Point> for euclid::Vector2D<Scalar, Scalar> {
+    fn from(point: Point) -> Self {
+        euclid::Vector2D::new(point.x(), point.y())
+    }
+}
+
+impl From<&Point> for euclid::Vector2D<Scalar, Scalar> {
+    fn from(point: &Point) -> Self {
+        euclid::Vector2D::new(point.x(), point.y())
+    }
+}
+
+impl Extent {
+    pub fn zero() -> Self {
+        Self(euclid::Size2D::<Scalar, Scalar>::zero())
+    }
+
+    pub fn new(width: impl Into<Scalar>, height: impl Into<Scalar>) -> Self {
+        Self(euclid::Size2D::<Scalar, Scalar>::new(
+            width.into(),
+            height.into(),
+        ))
+    }
+
+    pub fn width(&self) -> Scalar {
+        self.0.width.into()
+    }
+
+    pub fn height(&self) -> Scalar {
+        self.0.height.into()
+    }
+
+    pub fn as_tuple_f32(&self) -> (f32, f32) {
+        (self.0.width.into(), self.0.height.into())
+    }
+}
+
+impl Display for Extent {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({} x {})", self.width(), self.height())
+    }
+}
+
+impl Into<Point> for Extent {
+    fn into(self) -> Point {
+        Point::new(self.width(), self.height())
+    }
+}
+
+impl Div<f32> for Extent {
+    type Output = Self;
+
+    fn div(self, rhs: f32) -> Self::Output {
+        Self::new(self.width() / rhs, self.height() / rhs)
+    }
+}
+
+impl Sub for Extent {
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Self::new(self.width() - rhs.width(), self.height() - rhs.height())
+    }
+}
+
+impl Sub for &Extent {
+    type Output = Extent;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Extent::new(self.width() - rhs.width(), self.height() - rhs.height())
     }
 }
 
@@ -224,8 +328,8 @@ impl Rectangle {
         height: impl Into<Scalar>,
     ) -> Self {
         Self(euclid::Rect::<Scalar, Scalar>::new(
-            Point2D::new(left.into(), top.into()),
-            Size2D::new(width.into(), height.into()),
+            euclid::Point2D::new(left.into(), top.into()),
+            euclid::Size2D::new(width.into(), height.into()),
         ))
     }
 

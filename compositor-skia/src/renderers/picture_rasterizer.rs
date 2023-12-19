@@ -113,10 +113,11 @@ impl PictureRasterizer {
 
                 let canvas = surface.canvas();
                 canvas.clear(Color::TRANSPARENT);
-                canvas.translate(Vector::new(
-                    -device_bounds.left as f32,
-                    -device_bounds.top as f32,
-                ));
+                canvas
+                    .translate(Vector::new(
+                        -device_bounds.left as f32,
+                        -device_bounds.top as f32,
+                    ));
                 canvas.concat(&picture_to_rasterize.matrix);
 
                 canvas.draw_picture(&picture, None, None);

@@ -8,4 +8,10 @@ compositor = { path = "../compositor" }
 reference-box = "1.1"
 string-box = "1.1"
 array-box = "1.0"
-value-box = { version = "2", features = [ "phlow" ] }
+value-box = { version = "2" }
+phlow = { version = "1", optional = true }
+phlow-extensions = { version = "1", optional = true }
+
+[features]
+default = [ "phlow" ]
+phlow = [ "dep:phlow", "dep:phlow-extensions", "compositor/phlow", "value-box/phlow" ]

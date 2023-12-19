@@ -9,7 +9,8 @@ pub fn compositor_picture_layer_new(
 ) -> *mut ValueBox<Arc<dyn Layer>> {
     picture
         .with_clone_ok(|picture| {
-            ValueBox::new(Arc::new(PictureLayer::new(picture, needs_cache)) as Arc<dyn Layer>)
+            ValueBox::new(Arc::new(PictureLayer::new(picture, needs_cache))
+                as Arc<dyn Layer>)
         })
         .into_raw()
 }

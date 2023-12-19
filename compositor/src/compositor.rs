@@ -1,5 +1,5 @@
 use crate::{
-    ClipLayer, Layer, LeftoverStateLayer, OffsetLayer, PictureLayer, ShadowLayer,
+    ClipLayer, Layer, LeftoverStateLayer, OffsetLayer, PictureLayer, ShadowLayer, TiledLayer,
     TransformationLayer,
 };
 use std::fmt::Debug;
@@ -13,4 +13,5 @@ pub trait Compositor: Debug {
     fn compose_transformation(&mut self, layer: &TransformationLayer);
     fn compose_picture(&mut self, layer: &PictureLayer);
     fn compose_leftover(&mut self, layer: &LeftoverStateLayer);
+    fn compose_tiled(&mut self, layer: &TiledLayer);
 }

@@ -14,10 +14,7 @@ pub fn compositor_geometry_new_rectangle(
     width: f32,
     height: f32,
 ) -> *mut ValueBox<Geometry> {
-    ValueBox::new(Geometry::Rectangle(Rectangle::new(
-        left, top, width, height,
-    )))
-    .into_raw()
+    ValueBox::new(Geometry::Rectangle(Rectangle::new(left, top, width, height))).into_raw()
 }
 
 #[no_mangle]
@@ -51,11 +48,7 @@ pub fn compositor_geometry_new_circle(
     center_y: f32,
     radius: f32,
 ) -> *mut ValueBox<Geometry> {
-    ValueBox::new(Geometry::Circle(Circle::new(
-        Point::new(center_x, center_y),
-        radius,
-    )))
-    .into_raw()
+    ValueBox::new(Geometry::Circle(Circle::new(Point::new(center_x, center_y), radius))).into_raw()
 }
 
 /// Creates a new geometry from a given path consuming that path

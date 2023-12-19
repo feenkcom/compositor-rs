@@ -20,6 +20,13 @@ impl OffsetLayer {
         }
     }
 
+    pub fn wrap_with_offset(layer: impl Layer, offset: Point) -> Self {
+        Self {
+            layers: vec![layer.clone_arc()],
+            offset,
+        }
+    }
+
     pub fn offset(&self) -> &Point {
         &self.offset
     }
@@ -55,6 +62,44 @@ impl Layer for OffsetLayer {
 
     fn any(&self) -> &dyn Any {
         self
+    }
+}
+
+#[cfg(feature = "phlow")]
+mod extensions {
+    use super::*;
+    use phlow::{phlow, phlow_all, PhlowObject, PhlowView};
+
+    #[phlow::extensions(CompositorExtensions, OffsetLayer)]
+    impl OffsetLayerExtensions {
+        #[phlow::view]
+        pub fn layers_for(_this: &OffsetLayer, view: impl PhlowView) -> impl PhlowView {
+            view.list()
+                .title("Layers")
+                .priority(5)
+                .items::<OffsetLayer>(|layer| {
+                    let layers = layer.layers.clone();
+                    phlow_all!(layers)
+                })
+                .item_text::<&Arc<dyn Layer>>(|each| each.to_string())
+        }
+
+        #[phlow::view]
+        pub fn info_for(_this: &OffsetLayer, view: impl PhlowView) -> impl PhlowView {
+            view.columned_list()
+                .title("Info")
+                .priority(4)
+                .items::<OffsetLayer>(
+                    |layer| phlow_all!(vec![("Offset", phlow!(layer.offset.clone())),])
+                )
+                .column(|column| {
+                    column
+                        .title("Property")
+                        .item::<(&str, PhlowObject)>(|each| phlow!(each.0))
+                })
+                .column_item::<(&str, PhlowObject)>("Value", |each| phlow!(each.1.to_string()))
+                .send::<(&str, PhlowObject)>(|each| each.1.clone())
+        }
     }
 }
 

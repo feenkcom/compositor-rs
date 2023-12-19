@@ -69,19 +69,21 @@ pub(crate) fn draw_image(
 ) {
     let current_matrix = canvas.local_to_device_as_3x3();
 
-    let device_bounds = PictureToRasterize::compute_device_bounds_rect(
-        &into_skia_rect(cull_rectangle),
-        &current_matrix,
-    );
+    let device_bounds =
+        PictureToRasterize::compute_device_bounds_rect(
+            &into_skia_rect(cull_rectangle),
+            &current_matrix,
+        );
 
     canvas.save();
 
     let relative_matrix = Matrix::concat(&current_matrix, matrix.invert().as_ref().unwrap());
 
-    let relative_bounds = PictureToRasterize::compute_device_bounds(
-        &device_bounds.into(),
-        &relative_matrix.invert().unwrap(),
-    );
+    let relative_bounds =
+        PictureToRasterize::compute_device_bounds(
+            &device_bounds.into(),
+            &relative_matrix.invert().unwrap(),
+        );
 
     canvas.reset_matrix();
     canvas.set_matrix(&M44::from(relative_matrix));

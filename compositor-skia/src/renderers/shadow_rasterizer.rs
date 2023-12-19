@@ -99,10 +99,11 @@ impl ShadowRasterizer {
                 let canvas = surface.canvas();
 
                 canvas.clear(Color::TRANSPARENT);
-                canvas.translate(Vector::new(
-                    -device_bounds.left as f32,
-                    -device_bounds.top as f32,
-                ));
+                canvas
+                    .translate(Vector::new(
+                        -device_bounds.left as f32,
+                        -device_bounds.top as f32,
+                    ));
                 canvas.translate(as_skia_point(shadow.offset()).clone());
 
                 draw_shadow(canvas, shadow, Point::new(0.0, 0.0));

@@ -7,14 +7,23 @@ edition = "2021"
 compositor = { path = "../compositor" }
 skia-safe = { version = ">=0.68" }
 log = "0.4"
+cfg-if = "1.0"
+phlow = { version = "1", optional = true }
+phlow-extensions = { version = "1", optional = true }
 
 [dev-dependencies]
 winit = "0.27.5"
 env_logger = { version = "0.10", features = [ "color" ] }
+phlow = { version = "1" }
+phlow-extensions = { version = "1" }
+phlow-server = { version = "1" }
+rand = "0.8"
 
 [features]
+default = [ "phlow" ]
 gpu = [ "skia-safe/gpu" ]
 metal = [ "gpu", "skia-safe/metal" ]
+phlow = [ "dep:phlow", "dep:phlow-extensions", "compositor/phlow" ]
 
 # examples
 [target.'cfg(target_os = "macos")'.dev-dependencies]

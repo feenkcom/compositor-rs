@@ -14,12 +14,13 @@ pub fn compositor_shadow_new(
     geometry
         .take_value()
         .map(|geometry| {
-            let shadow = Shadow::new(
-                Color::from_argb(argb),
-                Radius::new(sigma_x, sigma_y),
-                Point::new_f32(delta_x, delta_y),
-                geometry,
-            );
+            let shadow =
+                Shadow::new(
+                    Color::from_argb(argb),
+                    Radius::new(sigma_x, sigma_y),
+                    Point::new_f32(delta_x, delta_y),
+                    geometry,
+                );
             ValueBox::new(shadow)
         })
         .into_raw()
