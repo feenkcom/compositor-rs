@@ -106,7 +106,7 @@ impl ShadowRasterizer {
                     ));
                 canvas.translate(as_skia_point(shadow.offset()).clone());
 
-                draw_shadow(canvas, shadow, Point::new(0.0, 0.0));
+                draw_shadow(canvas, shadow, Point::new(0.0, 0.0), None);
 
                 stats.log(draw_shadow_time, String::from("Draw shadow"));
 

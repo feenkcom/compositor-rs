@@ -7,8 +7,8 @@ use skia_safe::{
 };
 
 use compositor::{
-    ClipLayer, Compositor, Extent, Layer, LeftoverStateLayer, OffsetLayer, Picture, PictureLayer,
-    Point, Shadow, ShadowLayer, StateCommandType, TiledLayer, TransformationLayer,
+    ClipLayer, Compositor, Extent, Layer, LeftoverStateLayer, OffsetLayer, OpacityLayer, Picture,
+    PictureLayer, Point, Shadow, ShadowLayer, StateCommandType, TiledLayer, TransformationLayer,
 };
 
 use crate::renderers::PictureToRasterize;
@@ -22,6 +22,7 @@ use crate::{
 pub struct SkiaCompositor<'canvas, 'cache> {
     canvas: &'canvas Canvas,
     cache: &'cache mut Cache,
+    alpha: Option<f32>,
 }
 
 impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
@@ -56,7 +57,22 @@ impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
         self.canvas.restore();
     }
 
+    fn compose_opacity(&mut self, layer: &OpacityLayer) {
+        let previous_alpha = self.alpha.clone();
+        let new_alpha = previous_alpha
+            .map(|alpha| alpha * layer.alpha())
+            .unwrap_or_else(|| layer.alpha());
+        self.alpha = Some(new_alpha);
+
+        for layer in layer.layers() {
+            layer.compose(self);
+        }
+
+        self.alpha = previous_alpha;
+    }
+
     fn compose_shadow(&mut self, layer: &ShadowLayer) {
+        let paint = self.create_layer_paint();
         let canvas = &mut self.canvas;
 
         match self.cache.get_shadow_image(layer.shadow()) {
@@ -77,6 +93,7 @@ impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
                                 .shadow()
                                 .cull_rect()
                                 .translate(&layer.shadow().inflation_offset().neg()),
+                            paint.as_ref(),
                         );
 
                         self.cache.push_shadow_image(layer.shadow().clone(), image);
@@ -92,6 +109,7 @@ impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
                         .shadow()
                         .cull_rect()
                         .translate(&layer.shadow().inflation_offset().neg()),
+                    paint.as_ref(),
                 );
             }
         }
@@ -132,7 +150,7 @@ impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
                     match rasterized_picture.image {
                         None => {
                             error!("Failed to rasterize picture");
-                            canvas.draw_picture(picture, None, None);
+                            canvas.draw_picture(picture, None, self.create_layer_paint().as_ref());
                         }
                         Some(image) => {
                             draw_image(
@@ -140,6 +158,7 @@ impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
                                 &image,
                                 &rasterized_picture.matrix,
                                 &layer.cull_rect(),
+                                self.create_layer_paint().as_ref(),
                             );
 
                             self.cache
@@ -147,11 +166,17 @@ impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
                         }
                     }
                 } else {
-                    canvas.draw_picture(picture, None, None);
+                    canvas.draw_picture(picture, None, self.create_layer_paint().as_ref());
                 }
             }
             Some((image, matrix)) => {
-                draw_image(canvas, &image, &matrix, &layer.cull_rect());
+                draw_image(
+                    canvas,
+                    &image,
+                    &matrix,
+                    &layer.cull_rect(),
+                    self.create_layer_paint().as_ref(),
+                );
             }
         }
     }
@@ -261,12 +286,21 @@ impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
 
 impl<'canvas, 'cache> SkiaCompositor<'canvas, 'cache> {
     pub fn new(canvas: &'canvas Canvas, cache: &'cache mut Cache) -> Self {
-        Self { canvas, cache }
+        Self {
+            canvas,
+            cache,
+            alpha: None,
+        }
     }
 
     /// Draws a given shadow directly on the canvas avoiding caches and rasterization
     fn draw_shadow(&mut self, shadow: &Shadow) {
-        draw_shadow(self.canvas, shadow, as_skia_point(shadow.offset()).clone());
+        draw_shadow(
+            self.canvas,
+            shadow,
+            as_skia_point(shadow.offset()).clone(),
+            self.alpha,
+        );
     }
 
     fn debug_tiled_layer(&mut self, layer: &TiledLayer) {
@@ -375,7 +409,13 @@ impl<'canvas, 'cache> SkiaCompositor<'canvas, 'cache> {
             &text_paint,
         );
         self.canvas.draw_str(
-            &format!("left: {} top: {} right: {} bottom: {}", layer.left_tile_column(), layer.top_tile_row(), layer.right_tile_column(), layer.bottom_tile_row()),
+            &format!(
+                "left: {} top: {} right: {} bottom: {}",
+                layer.left_tile_column(),
+                layer.top_tile_row(),
+                layer.right_tile_column(),
+                layer.bottom_tile_row()
+            ),
             SkPoint::new(value_x, value_y * 6.0),
             &font,
             &text_paint,
@@ -393,5 +433,13 @@ impl<'canvas, 'cache> SkiaCompositor<'canvas, 'cache> {
 
         self.canvas
             .translate(Vector::new(offset.x().into(), offset.y().into()).neg());
+    }
+
+    fn create_layer_paint(&mut self) -> Option<Paint> {
+        self.alpha.map(|alpha| {
+            let mut paint = Paint::default();
+            paint.set_alpha_f(alpha);
+            paint
+        })
     }
 }

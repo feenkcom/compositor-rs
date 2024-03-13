@@ -1,8 +1,8 @@
 use crate::utils::{clip_canvas, draw_shadow};
 use crate::{as_skia_point, into_skia_matrix, to_skia_point};
 use compositor::{
-    ClipLayer, Compositor, Layer, LeftoverStateLayer, OffsetLayer, PictureLayer, Shadow,
-    ShadowLayer, StateCommandType, TiledLayer, TransformationLayer,
+    ClipLayer, Compositor, Layer, LeftoverStateLayer, OffsetLayer, OpacityLayer, PictureLayer,
+    Shadow, ShadowLayer, StateCommandType, TiledLayer, TransformationLayer,
 };
 use skia_safe::{Canvas, Color4f, Paint, Rect, Vector};
 use std::sync::Arc;
@@ -38,6 +38,10 @@ impl<'canvas> Compositor for SkiaCachelessCompositor<'canvas> {
         }
 
         self.canvas.restore();
+    }
+
+    fn compose_opacity(&mut self, layer: &OpacityLayer) {
+        todo!()
     }
 
     fn compose_shadow(&mut self, layer: &ShadowLayer) {
@@ -117,6 +121,11 @@ impl<'canvas> SkiaCachelessCompositor<'canvas> {
 
     /// Draws a given shadow directly on the canvas avoiding caches and rasterization
     fn draw_shadow(&mut self, shadow: &Shadow) {
-        draw_shadow(self.canvas, shadow, as_skia_point(shadow.offset()).clone());
+        draw_shadow(
+            self.canvas,
+            shadow,
+            as_skia_point(shadow.offset()).clone(),
+            None,
+        );
     }
 }

@@ -66,7 +66,14 @@ pub(crate) fn draw_image(
     image: &Image,
     matrix: &Matrix,
     cull_rectangle: &Rectangle,
+    paint: Option<&Paint>,
 ) {
+    if let Some(paint) = paint {
+        if paint.nothing_to_draw() {
+            return;
+        }
+    }
+
     let current_matrix = canvas.local_to_device_as_3x3();
 
     let device_bounds =
@@ -90,11 +97,11 @@ pub(crate) fn draw_image(
 
     let position = Point::new(relative_bounds.left as f32, relative_bounds.top as f32);
     trace!("Draw image at {:?}", &position);
-    canvas.draw_image(image, position, None);
+    canvas.draw_image(image, position, paint);
     canvas.restore();
 }
 
-pub(crate) fn draw_shadow(canvas: &Canvas, shadow: &Shadow, offset: Point) {
+pub(crate) fn draw_shadow(canvas: &Canvas, shadow: &Shadow, offset: Point, alpha: Option<f32>) {
     trace!("Draw {:?}", shadow);
 
     let shadow_offset: Vector = offset + to_skia_point(shadow.inflation_offset());
@@ -116,6 +123,9 @@ pub(crate) fn draw_shadow(canvas: &Canvas, shadow: &Shadow, offset: Point) {
     shadow_paint.set_blend_mode(BlendMode::SrcOver);
     shadow_paint.set_stroke_width(stroke_width);
     shadow_paint.set_image_filter(drop_shadow_filter);
+    if let Some(alpha) = alpha {
+        shadow_paint.set_alpha_f(alpha);
+    }
 
     draw_geometry(canvas, shadow.geometry(), &shadow_paint);
 }

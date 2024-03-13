@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use array_box::ArrayBox;
-use value_box::{value_box, ReturnBoxerResult, ValueBox, ValueBoxIntoRaw, ValueBoxPointer};
+use value_box::{value_box, ReturnBoxerResult, ValueBox, ValueBoxPointer};
 
 use compositor::{
     Extent, Layer, Picture, PictureLayer, Point, TiledFigureId, TiledLayer, TiledLayerFigure,
