@@ -1,6 +1,6 @@
 use crate::{
-    ClipLayer, Layer, LeftoverStateLayer, OffsetLayer, OpacityLayer, PictureLayer, ShadowLayer,
-    TiledLayer, TransformationLayer,
+    ClipLayer, ExplicitLayer, Layer, LeftoverStateLayer, OffsetLayer, OpacityLayer, PictureLayer,
+    ShadowLayer, TiledLayer, TransformationLayer,
 };
 use std::fmt::Debug;
 use std::sync::Arc;
@@ -15,4 +15,5 @@ pub trait Compositor: Debug {
     fn compose_picture(&mut self, layer: &PictureLayer);
     fn compose_leftover(&mut self, layer: &LeftoverStateLayer);
     fn compose_tiled(&mut self, layer: &TiledLayer);
+    fn compose_explicit(&mut self, layer: &ExplicitLayer);
 }

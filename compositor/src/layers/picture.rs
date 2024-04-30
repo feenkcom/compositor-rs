@@ -60,7 +60,7 @@ impl Layer for PictureLayer {
     }
 }
 
-pub trait Picture: Debug {
+pub trait Picture: Send + Sync + Debug {
     fn unique_id(&self) -> u32;
     fn cull_rect(&self) -> Rectangle;
     fn any(&self) -> &dyn Any;

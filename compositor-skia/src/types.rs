@@ -1,8 +1,11 @@
-use compositor::{Rectangle, VectorPath};
+use skia_safe::Canvas;
 use std::any::Any;
 use std::collections::hash_map::DefaultHasher;
+use std::fmt::{Debug, Formatter};
 use std::hash::Hash;
 use std::slice;
+
+use compositor::{Drawable, Rectangle, VectorPath};
 
 pub fn as_skia_point(point: &compositor::Point) -> &skia_safe::Point {
     unsafe { &*(point as *const compositor::Point as *const skia_safe::Point) }
@@ -143,10 +146,33 @@ impl From<skia_safe::Path> for SkiaPath {
     }
 }
 
+pub enum SkiaDrawable {
+    Dynamic(Box<dyn Fn(&Canvas) + Send + Sync>),
+}
+
+impl SkiaDrawable {
+    pub fn dynamic(rendering: impl Fn(&Canvas) + Send + Sync + 'static) -> Self {
+        Self::Dynamic(Box::new(rendering))
+    }
+}
+
+impl Debug for SkiaDrawable {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("SkiaDrawable").finish()
+    }
+}
+
+impl Drawable for SkiaDrawable {
+    fn any(&self) -> &dyn Any {
+        self
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::*;
     use compositor::Radius;
+
+    use super::*;
 
     #[test]
     fn test_point() {

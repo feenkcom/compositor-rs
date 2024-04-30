@@ -1,4 +1,5 @@
 pub use clip::ClipLayer;
+pub use explicit::ExplicitLayer;
 pub use layer::Layer;
 pub use leftover_state::{LeftoverStateLayer, StateCommand, StateCommandType};
 pub use offset::OffsetLayer;
@@ -9,6 +10,7 @@ pub use tiled::{TiledFigureId, TiledLayer, TiledLayerFigure, TiledLayerScaleFact
 pub use transformation::TransformationLayer;
 
 mod clip;
+mod explicit;
 mod layer;
 mod leftover_state;
 mod offset;

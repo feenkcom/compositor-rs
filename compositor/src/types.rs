@@ -421,7 +421,7 @@ impl Path {
     }
 }
 
-pub trait VectorPath: Debug {
+pub trait VectorPath: Send + Sync + Debug {
     fn bounds(&self) -> Rectangle;
     fn clone_box(&self) -> Box<dyn VectorPath>;
     fn eq_box(&self, other: &Box<dyn VectorPath>) -> bool;
@@ -450,3 +450,7 @@ impl PartialEq for Path {
 }
 
 impl Eq for Path {}
+
+pub trait Drawable: Send + Sync + Debug {
+    fn any(&self) -> &dyn Any;
+}

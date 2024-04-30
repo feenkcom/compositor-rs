@@ -5,6 +5,7 @@ members = [
     "compositor",
     "compositor-ffi",
     "compositor-skia",
+    "compositor-skia-platform",
     "compositor-skia-ffi"
 ]
 

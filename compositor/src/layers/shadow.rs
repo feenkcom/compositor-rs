@@ -61,14 +61,13 @@ pub struct Shadow {
 
 impl Shadow {
     pub fn new(color: Color, radius: Radius, offset: Point, geometry: Geometry) -> Self {
-        let mut shadow =
-            Self {
-                color,
-                radius,
-                offset,
-                geometry,
-                hash: None,
-            };
+        let mut shadow = Self {
+            color,
+            radius,
+            offset,
+            geometry,
+            hash: None,
+        };
         shadow.hash = Some(shadow.compute_default_hash());
         shadow
     }

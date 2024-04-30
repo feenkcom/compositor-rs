@@ -812,9 +812,9 @@ mod extensions {
             view.columned_list()
                 .title("Info")
                 .priority(4)
-                .items::<ParentNode<TiledLayerFigure>>(
-                    |parent_node| phlow_all!(vec![("Envelope", phlow!(parent_node.envelope())),])
-                )
+                .items::<ParentNode<TiledLayerFigure>>(|parent_node| {
+                    phlow_all!(vec![("Envelope", phlow!(parent_node.envelope())),])
+                })
                 .column(|column| {
                     column
                         .title("Property")

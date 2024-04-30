@@ -7,15 +7,16 @@ use skia_safe::{
 };
 
 use compositor::{
-    ClipLayer, Compositor, Extent, Layer, LeftoverStateLayer, OffsetLayer, OpacityLayer, Picture,
-    PictureLayer, Point, Shadow, ShadowLayer, StateCommandType, TiledLayer, TransformationLayer,
+    ClipLayer, Compositor, ExplicitLayer, Extent, Layer, LeftoverStateLayer, OffsetLayer,
+    OpacityLayer, Picture, PictureLayer, Point, Shadow, ShadowLayer, StateCommandType, TiledLayer,
+    TransformationLayer,
 };
 
 use crate::renderers::PictureToRasterize;
 use crate::utils::{clip_canvas, draw_image, draw_shadow};
 use crate::{
     as_skia_point, into_skia_matrix, to_skia_point, Cache, PictureRasterizer, ShadowRasterizer,
-    ShadowToRasterize, SkiaPicture,
+    ShadowToRasterize, SkiaDrawable, SkiaPicture,
 };
 
 #[derive(Debug)]
@@ -216,13 +217,12 @@ impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
 
         layer.visible_tiles().into_iter().for_each(|tile| {
             if layer.is_debug_mode() {
-                let rect =
-                    Rect::new(
-                        tile.left().into(),
-                        tile.top().into(),
-                        tile.right().into(),
-                        tile.bottom().into(),
-                    );
+                let rect = Rect::new(
+                    tile.left().into(),
+                    tile.top().into(),
+                    tile.right().into(),
+                    tile.bottom().into(),
+                );
 
                 let mut paint = Paint::new(Color4f::new(0.8, 0.8, 0.8, 1.0), None);
                 paint.set_stroke(true);
@@ -251,13 +251,12 @@ impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
                     }
                 }
 
-                let recorded_tile_picture: Option<PictureLayer> =
-                    recorder
-                        .finish_recording_as_picture(None)
-                        .map(|tile_picture| {
-                            Arc::new(SkiaPicture::new(tile_picture)) as Arc<dyn Picture>
-                        })
-                        .map(|tile_picture| PictureLayer::new(tile_picture, true));
+                let recorded_tile_picture: Option<PictureLayer> = recorder
+                    .finish_recording_as_picture(None)
+                    .map(|tile_picture| {
+                        Arc::new(SkiaPicture::new(tile_picture)) as Arc<dyn Picture>
+                    })
+                    .map(|tile_picture| PictureLayer::new(tile_picture, true));
 
                 if let Some(ref picture) = recorded_tile_picture {
                     layer.cache_tile_picture(&tile, picture.clone());
@@ -280,6 +279,18 @@ impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
 
         if layer.is_debug_mode() {
             self.debug_tiled_layer(layer);
+        }
+    }
+
+    fn compose_explicit(&mut self, layer: &ExplicitLayer) {
+        let drawable = layer
+            .drawable()
+            .any()
+            .downcast_ref::<SkiaDrawable>()
+            .expect("Drawable is not Skia Drawable!");
+
+        match drawable {
+            SkiaDrawable::Dynamic(rendering) => rendering(self.canvas),
         }
     }
 }
@@ -306,13 +317,12 @@ impl<'canvas, 'cache> SkiaCompositor<'canvas, 'cache> {
     fn debug_tiled_layer(&mut self, layer: &TiledLayer) {
         let center_x = layer.viewport_width() / 2.0;
         let center_y = layer.viewport_height() / 2.0;
-        let rect =
-            RRect::new_oval(Rect::new(
-                (center_x - 5.0).into(),
-                (center_y - 5.0).into(),
-                (center_x + 5.0).into(),
-                (center_y + 5.0).into(),
-            ));
+        let rect = RRect::new_oval(Rect::new(
+            (center_x - 5.0).into(),
+            (center_y - 5.0).into(),
+            (center_x + 5.0).into(),
+            (center_y + 5.0).into(),
+        ));
         let paint = Paint::new(Color4f::new(1.0, 0.0, 0.0, 0.5), None);
         self.canvas.draw_rrect(&rect, &paint);
 

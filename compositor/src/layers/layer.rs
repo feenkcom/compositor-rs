@@ -3,7 +3,7 @@ use std::any::Any;
 use std::fmt::Debug;
 use std::sync::Arc;
 
-pub trait Layer: Debug {
+pub trait Layer: Send + Sync + Debug {
     fn compose(&self, compositor: &mut dyn Compositor);
     fn layers(&self) -> &[Arc<dyn Layer>];
     /// Create a copy of the layer with the vector of layers as its children.

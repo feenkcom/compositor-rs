@@ -89,9 +89,9 @@ mod extensions {
             view.columned_list()
                 .title("Info")
                 .priority(4)
-                .items::<OffsetLayer>(
-                    |layer| phlow_all!(vec![("Offset", phlow!(layer.offset.clone())),])
-                )
+                .items::<OffsetLayer>(|layer| {
+                    phlow_all!(vec![("Offset", phlow!(layer.offset.clone())),])
+                })
                 .column(|column| {
                     column
                         .title("Property")
