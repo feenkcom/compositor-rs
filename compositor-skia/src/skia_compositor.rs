@@ -2,14 +2,16 @@ use std::ops::Neg;
 use std::sync::Arc;
 
 use log::error;
+
 use skia_safe::{
-    Canvas, Color4f, Font, Matrix, Paint, PictureRecorder, Point as SkPoint, RRect, Rect, Vector,
+    gpu, AlphaType, Canvas, Color4f, ColorType, Drawable, Font, Image, Matrix, Paint,
+    PictureRecorder, Point as SkPoint, RRect, Rect, Vector,
 };
 
 use compositor::{
     ClipLayer, Compositor, ExplicitLayer, Extent, Layer, LeftoverStateLayer, OffsetLayer,
-    OpacityLayer, Picture, PictureLayer, Point, Shadow, ShadowLayer, StateCommandType, TiledLayer,
-    TransformationLayer,
+    OpacityLayer, Picture, PictureLayer, Texture, Point, Shadow, ShadowLayer,
+    StateCommandType, TextureLayer, TiledLayer, TransformationLayer,
 };
 
 use crate::renderers::PictureToRasterize;
@@ -291,6 +293,46 @@ impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
 
         match drawable {
             SkiaDrawable::Dynamic(rendering) => rendering(self.canvas),
+        }
+    }
+
+    fn compose_texture(&mut self, layer: &TextureLayer) {
+
+        match layer.texture() {
+            #[cfg(target_os="macos")]
+            Texture::Metal(texture) => {
+                use foreign_types_shared::ForeignType;
+                use skia_safe::gpu::mtl;
+                use skia_safe::gpu;
+
+
+                if let Some(mut context) = self.canvas.recording_context() {
+                    let texture_info =
+                        unsafe { mtl::TextureInfo::new(texture.as_ptr() as mtl::Handle) };
+
+                    let backend_texture = unsafe {
+                        gpu::BackendTexture::new_metal(
+                            (layer.width() as i32, layer.height() as i32),
+                            gpu::Mipmapped::No,
+                            &texture_info,
+                        )
+                    };
+
+                    let image = Image::from_texture(
+                        &mut context,
+                        &backend_texture,
+                        gpu::SurfaceOrigin::TopLeft,
+                        ColorType::BGRA8888,
+                        AlphaType::Premul,
+                        None,
+                    );
+
+                    if let Some(image) = image {
+                        self.canvas.draw_image(image, skia_safe::Point::new(0.0, 0.0), None);
+                    }
+                }
+            }
+            _ => {}
         }
     }
 }

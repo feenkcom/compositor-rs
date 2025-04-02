@@ -3,7 +3,7 @@ use crate::{
 };
 use compositor::{Geometry, Rectangle, Shadow};
 use log::trace;
-use skia_safe::image_filters::drop_shadow_only;
+use skia_safe::image_filters::{drop_shadow_only, CropRect};
 use skia_safe::paint::Style;
 use skia_safe::{
     scalar, BlendMode, Canvas, ClipOp, Color, Image, Matrix, Paint, PathDirection, Point, Vector,
@@ -112,7 +112,7 @@ pub(crate) fn draw_shadow(canvas: &Canvas, shadow: &Shadow, offset: Point, alpha
     };
 
     let drop_shadow_filter =
-        drop_shadow_only(shadow_offset, shadow_radius, shadow_color, None, None);
+        drop_shadow_only(shadow_offset, shadow_radius, shadow_color, None, None, CropRect::NO_CROP_RECT);
 
     let mut shadow_paint = Paint::default();
     shadow_paint.set_style(Style::Stroke);

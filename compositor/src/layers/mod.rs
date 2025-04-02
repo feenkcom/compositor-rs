@@ -8,6 +8,7 @@ pub use picture::{Picture, PictureLayer};
 pub use shadow::{Shadow, ShadowLayer};
 pub use tiled::{TiledFigureId, TiledLayer, TiledLayerFigure, TiledLayerScaleFactor};
 pub use transformation::TransformationLayer;
+pub use texture::{TextureLayer, Texture};
 
 mod clip;
 mod explicit;
@@ -19,3 +20,4 @@ mod picture;
 mod shadow;
 mod tiled;
 mod transformation;
+mod texture;

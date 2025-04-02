@@ -1,9 +1,6 @@
 use crate::utils::{clip_canvas, draw_shadow};
 use crate::{as_skia_point, into_skia_matrix, to_skia_point, SkiaDrawable};
-use compositor::{
-    ClipLayer, Compositor, ExplicitLayer, Layer, LeftoverStateLayer, OffsetLayer, OpacityLayer,
-    PictureLayer, Shadow, ShadowLayer, StateCommandType, TiledLayer, TransformationLayer,
-};
+use compositor::{ClipLayer, Compositor, ExplicitLayer, Layer, LeftoverStateLayer, OffsetLayer, OpacityLayer, PictureLayer, Shadow, ShadowLayer, StateCommandType, TextureLayer, TiledLayer, TransformationLayer};
 use skia_safe::{Canvas, Color4f, Paint, Rect, Vector};
 use std::sync::Arc;
 
@@ -123,6 +120,10 @@ impl<'canvas> Compositor for SkiaCachelessCompositor<'canvas> {
         match drawable {
             SkiaDrawable::Dynamic(rendering) => rendering(self.canvas),
         }
+    }
+
+    fn compose_texture(&mut self, layer: &TextureLayer) {
+        todo!()
     }
 }
 

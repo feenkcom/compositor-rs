@@ -6,6 +6,7 @@ extern crate lazy_static;
 extern crate log;
 
 pub use platform_compositor::*;
+pub use platform_texture::*;
 #[cfg(target_os = "emscripten")]
 pub use webgl::*;
 
@@ -51,3 +52,4 @@ pub mod gl_x11;
 pub mod webgl;
 #[cfg(target_os = "emscripten")]
 pub mod webgl_utils;
+mod platform_texture;

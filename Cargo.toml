@@ -6,8 +6,8 @@ members = [
     "compositor-ffi",
     "compositor-skia",
     "compositor-skia-platform",
-    "compositor-skia-ffi"
-]
+    "compositor-skia-ffi",
+    "compositor-texture" ]
 
 exclude = [ "target" ]
 

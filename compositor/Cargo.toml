@@ -5,13 +5,19 @@ edition = "2021"
 
 [dependencies]
 euclid = "0.22"
-ordered-float = "4.1"
+ordered-float = "5.0"
 cfg-if = "1.0"
 phlow = { version = "1", optional = true }
 phlow-extensions = { version = "1", optional = true }
-rstar = "0.11"
+rstar = "0.12"
 parking_lot = "0.12"
-fraction = "0.14"
+fraction = "0.15"
+
+[target.'cfg(target_os="macos")'.dependencies]
+metal = { version = "0.32" }
+cocoa = { version = "0.26" }
+core-graphics-types = { version = "0.2" }
+foreign-types-shared = { version = "0.3" }
 
 [features]
 default = [ "phlow" ]

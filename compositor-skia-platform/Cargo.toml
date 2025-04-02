@@ -11,16 +11,43 @@ raw-window-handle-5 = { package = "raw-window-handle", version = "0.5", optional
 raw-window-handle-6 = { package = "raw-window-handle", version = "0.6", optional = true }
 compositor = { path = "../compositor" }
 compositor-skia = { path = "../compositor-skia" }
-fps_counter = "2.0"
+fps_counter = "3.0"
 
-[dependencies.mozangle]
+[target.'cfg(target_os="macos")'.dependencies]
+skia-safe = { version = ">=0.84", default-features = false, features = ["gl", "metal"] }
+metal = { version = "0.32" }
+cocoa = { version = "0.26" }
+core-graphics-types = { version = "0.2" }
+foreign-types-shared = { version = "0.3" }
+
+[target.'cfg(target_os="ios")'.dependencies]
+skia-safe = { version = ">=0.84", default-features = false, features = ["gl", "metal"] }
+uikit-sys = { git = "https://github.com/syrel/uikit-sys" }
+objc = "0.2"
+
+[target.'cfg(target_os="android")'.dependencies]
+skia-safe = { version = ">=0.84", default-features = false, features = ["gl"] }
+khronos-egl = { version = "6.0", features = [ "dynamic" ], optional = true }
+libloading = {version = "0.8", optional = true }
+
+[target.'cfg(target_os="linux")'.dependencies]
+skia-safe = { version = ">=0.84", default-features = false, features = ["gl"] }
+x11 = { version = "2.21", features = ["xlib", "glx"], optional = true }
+wayland-sys = { version = "0.31", default-features = false, features = ["egl", "client", "dlopen"], optional = true }
+khronos-egl = { version = "6.0", features = ["dynamic"], optional = true }
+libloading = {version = "0.8", optional = true }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+skia-safe = { version = ">=0.84", default-features = false, features = ["gl", "embed-icudtl"] }
+
+[target.'cfg(target_os="windows")'.dependencies.mozangle]
 git = "https://github.com/syrel/mozangle"
 rev = "8ad3227cbfe59b9ddbaa95379b5d45804427630d"
 optional = true
 features = [ "egl" ]
 
-[dependencies.windows]
-version = "0.54.0"
+[target.'cfg(target_os="windows")'.dependencies.windows]
+version = "0.61"
 optional = true
 features = [
     "Foundation",
@@ -38,33 +65,6 @@ features = [
     "Win32_System_WinRT_Graphics_Capture",
     "Graphics_DirectX_Direct3D11",
 ]
-
-[target.'cfg(target_os="macos")'.dependencies]
-skia-safe = { version = ">=0.72.0", features = ["gl", "metal"] }
-metal = { version = "0.27" }
-cocoa = { version = "0.25" }
-core-graphics-types = { version = "0.1" }
-foreign-types-shared = { version = "0.3" }
-
-[target.'cfg(target_os="ios")'.dependencies]
-skia-safe = { version = ">=0.72.0", features = ["gl", "metal"] }
-uikit-sys = { git = "https://github.com/syrel/uikit-sys" }
-objc = "0.2"
-
-[target.'cfg(target_os="android")'.dependencies]
-skia-safe = { version = ">=0.72.0", features = ["gl"] }
-khronos-egl = { version = "4.1", features = [ "dynamic" ], optional = true }
-libloading = {version = "0.7", optional = true }
-
-[target.'cfg(target_os="linux")'.dependencies]
-skia-safe = { version = ">=0.72.0", features = ["gl"] }
-x11 = { version = "2.21", features = ["xlib", "glx"], optional = true }
-wayland-sys = { version = "0.30.0", default-features = false, features = ["egl", "client", "dlopen"], optional = true }
-khronos-egl = { version = "4.1", features = ["dynamic"], optional = true }
-libloading = {version = "0.7", optional = true }
-
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-skia-safe = { version = ">=0.72.0", default-features = false, features = ["gl", "embed-icudtl"] }
 
 [features]
 raw-window-handle-5 = ["dep:raw-window-handle-5"]
