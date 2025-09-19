@@ -111,8 +111,17 @@ pub(crate) fn draw_shadow(canvas: &Canvas, shadow: &Shadow, offset: Point, alpha
         shadow_radius.1
     };
 
-    let drop_shadow_filter =
-        drop_shadow_only(shadow_offset, shadow_radius, shadow_color, None, None, CropRect::NO_CROP_RECT);
+    // let drop_shadow_filter =
+    //     drop_shadow_only(shadow_offset, shadow_radius, shadow_color, None, None, into_skia_rect(&shadow.cull_rect()));
+
+    let drop_shadow_filter = drop_shadow_only(
+        shadow_offset,
+        shadow_radius,
+        shadow_color,
+        None,
+        None,
+        CropRect::NO_CROP_RECT,
+    );
 
     let mut shadow_paint = Paint::default();
     shadow_paint.set_style(Style::Stroke);

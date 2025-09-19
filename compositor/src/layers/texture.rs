@@ -1,23 +1,23 @@
-use std::any::Any;
-use std::sync::Arc;
-
 use crate::{Compositor, Layer};
+use compositor_texture::TextureDesc;
+use std::any::Any;
+use std::ffi::c_void;
+use std::fmt::Debug;
+use std::sync::Arc;
 
 #[derive(Debug, Clone)]
 pub struct TextureLayer {
-    texture: Texture,
     width: u32,
     height: u32,
-    is_2d: bool,
+    texture: Texture,
 }
 
 impl TextureLayer {
-    pub fn new(texture: Texture, width: u32, height: u32) -> Self {
+    pub fn new(width: u32, height: u32, texture: Texture) -> Self {
         Self {
             texture,
             width,
             height,
-            is_2d: true,
         }
     }
 
@@ -58,7 +58,25 @@ impl Layer for TextureLayer {
 
 #[derive(Clone, Debug)]
 pub enum Texture {
-    #[cfg(target_os = "macos")]
-    Metal(metal::Texture),
-    Unsupported
+    Borrowed(BorrowedTexture),
+    External(ExternalTexture),
 }
+
+/// Allows users to draw into a borrowed texture which is managed by the compositor
+#[derive(Clone)]
+pub struct BorrowedTexture {
+    pub rendering: Arc<dyn Fn(TextureDesc, *const c_void) + Send + Sync>,
+    pub payload: *const c_void,
+}
+
+unsafe impl Sync for BorrowedTexture {}
+unsafe impl Send for BorrowedTexture {}
+
+impl Debug for BorrowedTexture {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "OwnedTexture")
+    }
+}
+
+#[derive(Clone, Debug)]
+pub enum ExternalTexture {}

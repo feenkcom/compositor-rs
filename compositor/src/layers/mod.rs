@@ -6,9 +6,9 @@ pub use offset::OffsetLayer;
 pub use opacity::OpacityLayer;
 pub use picture::{Picture, PictureLayer};
 pub use shadow::{Shadow, ShadowLayer};
+pub use texture::*;
 pub use tiled::{TiledFigureId, TiledLayer, TiledLayerFigure, TiledLayerScaleFactor};
 pub use transformation::TransformationLayer;
-pub use texture::{TextureLayer, Texture};
 
 mod clip;
 mod explicit;
@@ -18,6 +18,6 @@ mod offset;
 mod opacity;
 mod picture;
 mod shadow;
+mod texture;
 mod tiled;
 mod transformation;
-mod texture;

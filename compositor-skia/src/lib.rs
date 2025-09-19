@@ -3,6 +3,9 @@
 #[macro_use]
 extern crate cfg_if;
 
+#[macro_use]
+extern crate lazy_static;
+
 pub use skia_safe::{Canvas, Path, Picture};
 
 pub use cache::Cache;
@@ -15,10 +18,12 @@ pub use types::*;
 
 mod cache;
 mod image_cache;
+mod platform_compositor;
 mod renderers;
 mod shadow_cache;
 mod skia_cacheless_compositor;
 mod skia_compositor;
+mod textures;
 mod types;
 mod utils;
 

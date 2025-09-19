@@ -61,13 +61,11 @@ fn main() {
     let mut compositor = PlatformCompositor::new(context);
 
     compositor
-        .submit_layer(OffsetLayer::new().with_layers(
-            vec![
+        .submit_layer(OffsetLayer::new().with_layers(vec![
                 ExplicitLayer::new(SkiaDrawable::dynamic(|canvas| {
                     canvas.draw_color(Color4f::new(0.0, 0.0, 1.0, 1.0), None);
                 })).clone_arc(),
-                TextureLayer::new(texture.texture(), 300, 200).clone_arc()],
-        ))
+                TextureLayer::new(texture.texture(), 300, 200).clone_arc()]))
         .unwrap();
 
     event_loop

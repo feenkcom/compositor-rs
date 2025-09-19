@@ -1,20 +1,24 @@
 use std::ops::Neg;
+use std::path::Path;
 use std::sync::Arc;
 
 use log::error;
 
-use skia_safe::{
-    gpu, AlphaType, Canvas, Color4f, ColorType, Drawable, Font, Image, Matrix, Paint,
-    PictureRecorder, Point as SkPoint, RRect, Rect, Vector,
-};
-
 use compositor::{
     ClipLayer, Compositor, ExplicitLayer, Extent, Layer, LeftoverStateLayer, OffsetLayer,
-    OpacityLayer, Picture, PictureLayer, Texture, Point, Shadow, ShadowLayer,
-    StateCommandType, TextureLayer, TiledLayer, TransformationLayer,
+    OpacityLayer, Picture, PictureLayer, Point, Shadow, ShadowLayer, StateCommandType, Texture,
+    TextureLayer, TiledLayer, TransformationLayer,
+};
+use compositor_skia_platform::{Platform, PlatformContext};
+use skia_safe::gpu::{Budgeted, SurfaceOrigin};
+use skia_safe::surface::BackendHandleAccess;
+use skia_safe::{
+    gpu, AlphaType, Canvas, Color4f, ColorType, Drawable, EncodedImageFormat, Font, Image,
+    ImageInfo, Matrix, Paint, PictureRecorder, Point as SkPoint, RRect, Rect, Size, Vector,
 };
 
 use crate::renderers::PictureToRasterize;
+use crate::textures::disassemble_backend_texture;
 use crate::utils::{clip_canvas, draw_image, draw_shadow};
 use crate::{
     as_skia_point, into_skia_matrix, to_skia_point, Cache, PictureRasterizer, ShadowRasterizer,
@@ -23,6 +27,7 @@ use crate::{
 
 #[derive(Debug)]
 pub struct SkiaCompositor<'canvas, 'cache> {
+    platform: Option<Platform>,
     canvas: &'canvas Canvas,
     cache: &'cache mut Cache,
     alpha: Option<f32>,
@@ -241,7 +246,7 @@ impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
                     None,
                 );
 
-                let mut compositor = SkiaCompositor::new(canvas, self.cache);
+                let mut compositor = SkiaCompositor::new(self.platform.clone(), canvas, self.cache);
 
                 for figure in layer.figures_overlapping_tile(&tile) {
                     if let Some(picture) = figure.get_picture() {
@@ -297,49 +302,80 @@ impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
     }
 
     fn compose_texture(&mut self, layer: &TextureLayer) {
-
         match layer.texture() {
-            #[cfg(target_os="macos")]
-            Texture::Metal(texture) => {
-                use foreign_types_shared::ForeignType;
-                use skia_safe::gpu::mtl;
-                use skia_safe::gpu;
+            Texture::Borrowed(texture) => {
+                let mut context = self.canvas.direct_context().unwrap();
 
+                //let scale = self.canvas.local_to_device_as_3x3().decompose_scale(None).unwrap_or_else(|| Size::new(1.0, 1.0));
+                let scale = Size::new(2.0, 2.0);
 
-                if let Some(mut context) = self.canvas.recording_context() {
-                    let texture_info =
-                        unsafe { mtl::TextureInfo::new(texture.as_ptr() as mtl::Handle) };
-
-                    let backend_texture = unsafe {
-                        gpu::BackendTexture::new_metal(
-                            (layer.width() as i32, layer.height() as i32),
-                            gpu::Mipmapped::No,
-                            &texture_info,
-                        )
-                    };
-
-                    let image = Image::from_texture(
-                        &mut context,
-                        &backend_texture,
-                        gpu::SurfaceOrigin::TopLeft,
-                        ColorType::BGRA8888,
-                        AlphaType::Premul,
+                let mut render_target = gpu::surfaces::render_target(
+                    &mut context,
+                    Budgeted::Yes, // let Skia manage the texture memory
+                    &ImageInfo::new_n32_premul(
+                        (
+                            (layer.width() as f32 * scale.width) as i32,
+                            (layer.height() as f32 * scale.height) as i32,
+                        ),
                         None,
-                    );
+                    ),
+                    Some(1),                // sample count
+                    SurfaceOrigin::TopLeft, // texture origin
+                    None,                   // optional surface properties
+                    false,                  // mipmapped
+                    false,
+                )
+                .unwrap();
 
-                    if let Some(image) = image {
-                        self.canvas.draw_image(image, skia_safe::Point::new(0.0, 0.0), None);
-                    }
+                let backend_texture = gpu::surfaces::get_backend_texture(
+                    &mut render_target,
+                    BackendHandleAccess::FlushRead,
+                )
+                .unwrap();
+                let texture_description = disassemble_backend_texture(
+                    self.platform.as_ref(),
+                    &mut context,
+                    &backend_texture,
+                    scale
+                )
+                .unwrap();
+
+                context.flush_and_submit();
+
+                (texture.rendering)(texture_description, texture.payload);
+
+                if let Some(image) = Image::from_texture(
+                    &mut context,
+                    &backend_texture,
+                    gpu::SurfaceOrigin::TopLeft,
+                    skia_safe::ColorType::RGBA8888,
+                    AlphaType::Premul,
+                    None, // no color space
+                ) {
+                    // Draw the image into the original canvas
+                    let dst = Rect::from_xywh(
+                        0.0,
+                        0.0,
+                        layer.width() as f32,
+                        layer.height() as f32,
+                    );
+                    self.canvas
+                        .draw_image_rect(&image, None, dst, &Paint::default());
                 }
             }
-            _ => {}
+            Texture::External(_) => {}
         }
     }
 }
 
 impl<'canvas, 'cache> SkiaCompositor<'canvas, 'cache> {
-    pub fn new(canvas: &'canvas Canvas, cache: &'cache mut Cache) -> Self {
+    pub fn new(
+        platform: Option<Platform>,
+        canvas: &'canvas Canvas,
+        cache: &'cache mut Cache,
+    ) -> Self {
         Self {
+            platform,
             canvas,
             cache,
             alpha: None,

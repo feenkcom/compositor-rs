@@ -5,8 +5,6 @@ extern crate lazy_static;
 #[macro_use]
 extern crate log;
 
-pub use platform_compositor::*;
-pub use platform_texture::*;
 #[cfg(target_os = "emscripten")]
 pub use webgl::*;
 
@@ -39,7 +37,8 @@ pub mod angle;
 #[cfg(feature = "angle")]
 pub mod angle_utils;
 
-mod platform_compositor;
+mod platform_context;
+pub use platform_context::*;
 
 #[cfg(all(feature = "egl", target_os = "android"))]
 pub mod egl_android;
@@ -48,8 +47,9 @@ pub mod egl_wayland;
 #[cfg(feature = "x11")]
 pub mod gl_x11;
 
+mod platform;
 #[cfg(target_os = "emscripten")]
 pub mod webgl;
 #[cfg(target_os = "emscripten")]
 pub mod webgl_utils;
-mod platform_texture;
+pub use platform::*;

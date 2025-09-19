@@ -4,6 +4,7 @@ version = "2.3.0"
 edition = "2021"
 
 [dependencies]
+compositor-texture = { path = "../compositor-texture" }
 euclid = "0.22"
 ordered-float = "5.0"
 cfg-if = "1.0"
@@ -20,7 +21,7 @@ core-graphics-types = { version = "0.2" }
 foreign-types-shared = { version = "0.3" }
 
 [features]
-default = [ "phlow" ]
+default = [  ]
 phlow = [ "dep:phlow", "dep:phlow-extensions" ]
 
 [dev-dependencies]

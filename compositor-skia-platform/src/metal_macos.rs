@@ -2,25 +2,24 @@ use std::mem;
 
 use cocoa::appkit::NSView;
 use cocoa::base::{id as cocoa_id, YES};
-use cocoa::foundation::NSUInteger;
 use core_graphics_types::geometry::CGSize;
 use foreign_types_shared::{ForeignType, ForeignTypeRef};
-use metal::{
-    CommandQueue, Device, MTLPixelFormat, MetalDrawableRef, MetalLayer, TextureDescriptor,
-};
+use metal::{CommandQueue, Device, MTLPixelFormat, MetalDrawableRef, MetalLayer};
 use skia_safe::gpu::mtl::BackendContext;
-use skia_safe::gpu::{
-    mtl, BackendRenderTarget, BackendTexture, DirectContext, Mipmapped, SurfaceOrigin,
-};
+use skia_safe::gpu::{mtl, BackendRenderTarget, DirectContext, SurfaceOrigin};
 use skia_safe::{gpu, scalar, ColorType, ISize, Size, Surface};
-use compositor::Texture;
 
 #[allow(dead_code)]
+#[derive(Debug, Clone)]
+pub struct MetalPlatform {
+    pub device: Device,
+    pub queue: CommandQueue,
+}
+
 #[derive(Debug)]
 pub struct MetalContext {
-    device: Device,
+    platform: MetalPlatform,
     layer: MetalLayer,
-    queue: CommandQueue,
     backend_context: BackendContext,
     direct_context: DirectContext,
 }
@@ -34,8 +33,6 @@ impl MetalContext {
             layer.set_device(&device);
             layer.set_pixel_format(MTLPixelFormat::BGRA8Unorm);
             layer.set_presents_with_transaction(false);
-            layer.set_display_sync_enabled(false);
-
             if let Some(size) = size {
                 layer.set_drawable_size(size);
             }
@@ -50,19 +47,18 @@ impl MetalContext {
         let queue = device.new_command_queue();
 
         let backend_context = unsafe {
-            mtl::BackendContext::new(
+            BackendContext::new(
                 device.as_ptr() as mtl::Handle,
                 queue.as_ptr() as mtl::Handle,
-                std::ptr::null(),
             )
         };
 
         let direct_context = DirectContext::new_metal(&backend_context, None).unwrap();
+        //let direct_context = gpu::direct_contexts::make_metal(&backend_context, None).unwrap();
 
         MetalContext {
-            device,
+            platform: MetalPlatform { device, queue },
             layer,
-            queue,
             backend_context,
             direct_context,
         }
@@ -84,6 +80,7 @@ impl MetalContext {
                 unsafe { mtl::TextureInfo::new(drawable.texture().as_ptr() as mtl::Handle) };
 
             let backend_render_target = BackendRenderTarget::new_metal(
+                //let backend_render_target = gpu::backend_render_targets::make_mtl(
                 (drawable_size.width as i32, drawable_size.height as i32),
                 &texture_info,
             );
@@ -107,39 +104,39 @@ impl MetalContext {
     }
 
     pub fn commit(&self, drawable: &MetalDrawableRef) {
-        let command_buffer = self.queue.new_command_buffer();
+        let command_buffer = self.platform.queue.new_command_buffer();
         command_buffer.present_drawable(drawable);
         command_buffer.commit()
     }
 }
-
-pub struct MetalTexture {
-    texture: Texture,
-    backend_texture: BackendTexture,
-}
-
-impl MetalTexture {
-    pub fn offscreen(width: u32, height: u32) -> Self {
-        let device = Device::system_default().expect("no device found");
-        let texture_descriptor = TextureDescriptor::new();
-        texture_descriptor.set_width(width as NSUInteger);
-        texture_descriptor.set_height(height as NSUInteger);
-        texture_descriptor.set_pixel_format(MTLPixelFormat::BGRA8Unorm);
-
-        let texture = device.new_texture(&texture_descriptor);
-
-        let texture_info = unsafe { mtl::TextureInfo::new(texture.as_ptr() as mtl::Handle) };
-
-        let backend_texture =
-            unsafe { BackendTexture::new_metal((width as i32, height as i32), Mipmapped::No, &texture_info) };
-
-        Self {
-            texture: Texture::Metal(texture),
-            backend_texture,
-        }
-    }
-
-    pub fn as_backend_texture(&self) -> BackendTexture {
-        self.backend_texture.clone()
-    }
-}
+//
+// pub struct MetalTexture {
+//     texture: Texture,
+//     backend_texture: BackendTexture,
+// }
+//
+// impl MetalTexture {
+//     pub fn offscreen(width: u32, height: u32) -> Self {
+//         let device = Device::system_default().expect("no device found");
+//         let texture_descriptor = TextureDescriptor::new();
+//         texture_descriptor.set_width(width as NSUInteger);
+//         texture_descriptor.set_height(height as NSUInteger);
+//         texture_descriptor.set_pixel_format(MTLPixelFormat::BGRA8Unorm);
+//
+//         let texture = device.new_texture(&texture_descriptor);
+//
+//         let texture_info = unsafe { mtl::TextureInfo::new(texture.as_ptr() as mtl::Handle) };
+//
+//         let backend_texture =
+//             unsafe { BackendTexture::new_metal((width as i32, height as i32), Mipmapped::No, &texture_info) };
+//
+//         Self {
+//             texture: Texture::Metal(texture),
+//             backend_texture,
+//         }
+//     }
+//
+//     pub fn as_backend_texture(&self) -> BackendTexture {
+//         self.backend_texture.clone()
+//     }
+// }

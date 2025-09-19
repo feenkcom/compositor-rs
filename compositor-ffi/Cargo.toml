@@ -5,13 +5,15 @@ edition = "2021"
 
 [dependencies]
 compositor = { path = "../compositor" }
+compositor-texture = { path = "../compositor-texture" }
 reference-box = "1.1"
 string-box = "1.1"
 array-box = "1.0"
 value-box = { version = "2" }
 phlow = { version = "1", optional = true }
 phlow-extensions = { version = "1", optional = true }
+cfg-if = "1.0"
 
 [features]
-default = [ "phlow" ]
+default = [ ]
 phlow = [ "dep:phlow", "dep:phlow-extensions", "compositor/phlow", "value-box/phlow" ]

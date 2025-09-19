@@ -15,7 +15,7 @@ pub fn skia_compositor_compose(
         .with_ref(|layer| {
             cache.with_mut_ok(|cache| {
                 canvas.with_not_null(|canvas| {
-                    SkiaCompositor::new(canvas, cache).compose(layer.clone());
+                    SkiaCompositor::new(None, canvas, cache).compose(layer.clone());
                 })
             })
         })

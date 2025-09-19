@@ -5,8 +5,13 @@ edition = "2021"
 
 [dependencies]
 compositor = { path = "../compositor" }
+compositor-texture = { path = "../compositor-texture" }
+compositor-skia-platform = { path = "../compositor-skia-platform" }
 log = "0.4"
 cfg-if = "1.0"
+anyhow = "1.0"
+lazy_static = "1.4"
+fps_counter = "3.0"
 phlow = { version = "1", optional = true }
 phlow-extensions = { version = "1", optional = true }
 
@@ -14,10 +19,10 @@ phlow-extensions = { version = "1", optional = true }
 foreign-types-shared = { version = "0.3" }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-skia-safe = { version = ">=0.84", default-features = false }
+skia-safe = { version = ">=0.72" }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-skia-safe = { version = ">=0.84", default-features = false, features = ["embed-icudtl"] }
+skia-safe = { version = ">=0.72", features = ["embed-icudtl"] }
 
 [dev-dependencies]
 winit = "0.27.5"
@@ -28,7 +33,7 @@ phlow-server = { version = "1" }
 rand = "0.8"
 
 [features]
-default = [ "phlow" ]
+default = [ ]
 gpu = [ "skia-safe/gpu" ]
 metal = [ "gpu", "skia-safe/metal" ]
 phlow = [ "dep:phlow", "dep:phlow-extensions", "compositor/phlow" ]

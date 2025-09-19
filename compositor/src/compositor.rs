@@ -1,4 +1,7 @@
-use crate::{ClipLayer, ExplicitLayer, Layer, LeftoverStateLayer, OffsetLayer, OpacityLayer, PictureLayer, ShadowLayer, TextureLayer, TiledLayer, TransformationLayer};
+use crate::{
+    ClipLayer, ExplicitLayer, Layer, LeftoverStateLayer, OffsetLayer, OpacityLayer, PictureLayer,
+    ShadowLayer, TextureLayer, TiledLayer, TransformationLayer,
+};
 use std::fmt::Debug;
 use std::sync::Arc;
 
