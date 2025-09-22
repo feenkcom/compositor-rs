@@ -19,7 +19,7 @@ pub fn disassemble_backend_texture(
             platform.try_as_metal_platform()?,
             context,
             backend_texture,
-            scale
+            scale,
         )
         .map(|texture| texture.into_texture()),
         BackendAPI::Direct3D => None,
@@ -39,8 +39,8 @@ mod metal {
         backend_formats, backend_textures, mtl, BackendAPI, BackendTexture, DirectContext,
         RecordingContext,
     };
-    use std::ffi::c_void;
     use skia_safe::Size;
+    use std::ffi::c_void;
 
     pub(crate) fn disassemble_metal_backend_texture(
         platform: &MetalPlatform,

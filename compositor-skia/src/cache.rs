@@ -49,6 +49,10 @@ impl Cache {
         self.image_cache.get_picture_image(picture_id)
     }
 
+    pub fn remove_picture_image(&mut self, picture_id: u32) {
+        self.image_cache.remove_picture_image(picture_id);
+    }
+
     pub fn push_id_image(&mut self, picture_id: u32, image: Image, matrix: Matrix) {
         self.image_cache.push_id_image(picture_id, image, matrix);
     }

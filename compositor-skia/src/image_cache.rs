@@ -62,6 +62,10 @@ impl ImageCache {
         })
     }
 
+    pub fn remove_picture_image(&mut self, picture_id: u32) {
+        self.images.remove(&picture_id);
+    }
+
     pub fn has_cached_image(&self, picture_id: u32) -> bool {
         self.images.contains_key(&picture_id)
     }

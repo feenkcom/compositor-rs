@@ -1,5 +1,4 @@
 use std::ops::Neg;
-use std::path::Path;
 use std::sync::Arc;
 
 use log::error;
@@ -9,11 +8,11 @@ use compositor::{
     OpacityLayer, Picture, PictureLayer, Point, Shadow, ShadowLayer, StateCommandType, Texture,
     TextureLayer, TiledLayer, TransformationLayer,
 };
-use compositor_skia_platform::{Platform, PlatformContext};
+use compositor_skia_platform::Platform;
 use skia_safe::gpu::{Budgeted, SurfaceOrigin};
 use skia_safe::surface::BackendHandleAccess;
 use skia_safe::{
-    gpu, AlphaType, Canvas, Color4f, ColorType, Drawable, EncodedImageFormat, Font, Image,
+    gpu, AlphaType, Canvas, Color4f, ColorType, Font, Image,
     ImageInfo, Matrix, Paint, PictureRecorder, Point as SkPoint, RRect, Rect, Size, Vector,
 };
 
@@ -139,10 +138,9 @@ impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
     }
 
     fn compose_picture(&mut self, layer: &PictureLayer) {
-        let canvas = &mut self.canvas;
-
         match self.cache.get_picture_image(layer.id()) {
             None => {
+                let canvas = &mut self.canvas;
                 let compositor_picture = layer.picture();
                 let picture = compositor_picture
                     .any()
@@ -178,13 +176,33 @@ impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
                 }
             }
             Some((image, matrix)) => {
-                draw_image(
-                    canvas,
-                    &image,
-                    &matrix,
-                    &layer.cull_rect(),
-                    self.create_layer_paint().as_ref(),
-                );
+                let current_canvas_scale =
+                    self.canvas.local_to_device_as_3x3().decompose_scale(None);
+                let image_scale = matrix.decompose_scale(None);
+
+                if current_canvas_scale == image_scale {
+                    let mut paint = self
+                        .create_layer_paint()
+                        .unwrap_or_else(|| Paint::default());
+                    paint.set_anti_alias(true);
+
+                    draw_image(
+                        self.canvas,
+                        &image,
+                        &matrix,
+                        &layer.cull_rect(),
+                        Some(&paint),
+                    );
+                } else {
+                    self.cache.remove_picture_image(layer.id());
+                    let compositor_picture = layer.picture();
+                    let picture = compositor_picture
+                        .any()
+                        .downcast_ref::<skia_safe::Picture>()
+                        .expect("Picture is not Skia Picture!");
+                    self.canvas
+                        .draw_picture(picture, None, self.create_layer_paint().as_ref());
+                }
             }
         }
     }
@@ -273,7 +291,7 @@ impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
             }
 
             let tile_picture = tile_picture.map(|picture| {
-                let image = self.cache.get_picture_image(picture.id());
+                let _image = self.cache.get_picture_image(picture.id());
                 OffsetLayer::wrap_with_offset(picture, tile.origin())
             });
 
@@ -306,8 +324,11 @@ impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
             Texture::Borrowed(texture) => {
                 let mut context = self.canvas.direct_context().unwrap();
 
-                //let scale = self.canvas.local_to_device_as_3x3().decompose_scale(None).unwrap_or_else(|| Size::new(1.0, 1.0));
-                let scale = Size::new(2.0, 2.0);
+                let scale = self
+                    .canvas
+                    .local_to_device_as_3x3()
+                    .decompose_scale(None)
+                    .unwrap_or_else(|| Size::new(1.0, 1.0));
 
                 let mut render_target = gpu::surfaces::render_target(
                     &mut context,
@@ -336,7 +357,7 @@ impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
                     self.platform.as_ref(),
                     &mut context,
                     &backend_texture,
-                    scale
+                    scale,
                 )
                 .unwrap();
 
@@ -347,18 +368,14 @@ impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
                 if let Some(image) = Image::from_texture(
                     &mut context,
                     &backend_texture,
-                    gpu::SurfaceOrigin::TopLeft,
-                    skia_safe::ColorType::RGBA8888,
+                    SurfaceOrigin::TopLeft,
+                    ColorType::RGBA8888,
                     AlphaType::Premul,
                     None, // no color space
                 ) {
                     // Draw the image into the original canvas
-                    let dst = Rect::from_xywh(
-                        0.0,
-                        0.0,
-                        layer.width() as f32,
-                        layer.height() as f32,
-                    );
+                    let dst =
+                        Rect::from_xywh(0.0, 0.0, layer.width() as f32, layer.height() as f32);
                     self.canvas
                         .draw_image_rect(&image, None, dst, &Paint::default());
                 }
