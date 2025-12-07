@@ -12,34 +12,34 @@ raw-window-handle-6 = { package = "raw-window-handle", version = "0.6", optional
 fps_counter = "3.0"
 
 [target.'cfg(target_os="macos")'.dependencies]
-skia-safe = { version = ">=0.84", default-features = false, features = ["gl", "metal"] }
+skia-safe = { version = ">=0.90", default-features = false, features = ["gl", "metal"] }
 metal = { version = "0.32" }
 cocoa = { version = "0.26" }
 core-graphics-types = { version = "0.2" }
 foreign-types-shared = { version = "0.3" }
 
 [target.'cfg(target_os="ios")'.dependencies]
-skia-safe = { version = ">=0.84", default-features = false, features = ["gl", "metal"] }
+skia-safe = { version = ">=0.90", default-features = false, features = ["gl", "metal"] }
 uikit-sys = { git = "https://github.com/syrel/uikit-sys" }
 objc = "0.2"
 
 [target.'cfg(target_os="android")'.dependencies]
-skia-safe = { version = ">=0.84", default-features = false, features = ["gl"] }
+skia-safe = { version = ">=0.90", default-features = false, features = ["gl"] }
 khronos-egl = { version = "6.0", features = [ "dynamic" ], optional = true }
 libloading = {version = "0.8", optional = true }
 
 [target.'cfg(target_os="linux")'.dependencies]
-skia-safe = { version = ">=0.84", default-features = false, features = ["gl"] }
+skia-safe = { version = ">=0.90", default-features = false, features = ["gl"] }
 x11 = { version = "2.21", features = ["xlib", "glx"], optional = true }
 wayland-sys = { version = "0.31", default-features = false, features = ["egl", "client", "dlopen"], optional = true }
 khronos-egl = { version = "6.0", features = ["dynamic"], optional = true }
 libloading = {version = "0.8", optional = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-skia-safe = { version = ">=0.84", default-features = false, features = ["gl", "embed-icudtl"] }
+skia-safe = { version = ">=0.90", default-features = false, features = ["gl", "embed-icudtl"] }
 
 [target.'cfg(target_os="windows")'.dependencies]
-skia-safe = { version = ">=0.84", default-features = false, features = ["gl", "d3d"] }
+skia-safe = { version = ">=0.90", default-features = false, features = ["gl", "d3d"] }
 
 [target.'cfg(target_os="windows")'.dependencies.mozangle]
 git = "https://github.com/syrel/mozangle"

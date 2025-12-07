@@ -270,7 +270,7 @@ impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
                 let mut recorder = PictureRecorder::new();
                 let canvas = recorder.begin_recording(
                     Rect::new(0.0, 0.0, tile.width().into(), tile.height().into()),
-                    None,
+                    false,
                 );
 
                 let mut compositor = SkiaCompositor::new(self.platform.clone(), canvas, self.cache);

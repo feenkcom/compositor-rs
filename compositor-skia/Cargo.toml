@@ -19,10 +19,10 @@ phlow-extensions = { version = "1", optional = true }
 foreign-types-shared = { version = "0.3" }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-skia-safe = { version = ">=0.72" }
+skia-safe = { version = ">=0.90" }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-skia-safe = { version = ">=0.72", features = ["embed-icudtl"] }
+skia-safe = { version = ">=0.90", features = ["embed-icudtl"] }
 
 [dev-dependencies]
 winit = "0.27.5"

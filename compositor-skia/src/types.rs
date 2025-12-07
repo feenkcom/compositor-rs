@@ -103,8 +103,9 @@ impl From<skia_safe::Picture> for SkiaPicture {
 
 #[derive(Debug, Clone)]
 pub struct SkiaPath(skia_safe::Path);
+unsafe impl Sync for SkiaPath {}
 
-impl compositor::VectorPath for SkiaPath {
+impl VectorPath for SkiaPath {
     fn bounds(&self) -> Rectangle {
         to_compositor_rectangle(self.0.bounds().clone())
     }
