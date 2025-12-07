@@ -5,7 +5,7 @@ use value_box::{ValueBox, ValueBoxIntoRaw, ValueBoxPointer};
 use compositor::Picture;
 use compositor_skia::SkiaPicture;
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub fn skia_compositor_picture_new(
     picture: *mut ValueBox<compositor_skia::Picture>,
 ) -> *mut ValueBox<Arc<dyn Picture>> {

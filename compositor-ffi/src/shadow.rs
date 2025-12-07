@@ -2,8 +2,8 @@ use compositor::{Color, Geometry, Point, Radius, Shadow};
 use value_box::{ValueBox, ValueBoxIntoRaw, ValueBoxPointer};
 
 /// Creates a new shadow consuming the geometry
-#[no_mangle]
-pub fn compositor_shadow_new(
+#[unsafe(no_mangle)]
+pub extern "C" fn compositor_shadow_new(
     argb: u32,
     sigma_x: f32,
     sigma_y: f32,
@@ -25,7 +25,7 @@ pub fn compositor_shadow_new(
         .into_raw()
 }
 
-#[no_mangle]
-pub fn compositor_shadow_drop(shadow: *mut ValueBox<Shadow>) {
+#[unsafe(no_mangle)]
+pub extern "C" fn compositor_shadow_drop(shadow: *mut ValueBox<Shadow>) {
     shadow.release();
 }

@@ -2,9 +2,9 @@ use crate::textures::disassemble_backend_texture;
 use crate::utils::{clip_canvas, draw_shadow};
 use crate::{as_skia_point, into_skia_matrix, to_skia_point, SkiaDrawable};
 use compositor::{
-    ClipLayer, Compositor, ExplicitLayer, Layer, LeftoverStateLayer, OffsetLayer, OpacityLayer,
-    PictureLayer, Shadow, ShadowLayer, StateCommandType, Texture, TextureLayer, TiledLayer,
-    TransformationLayer,
+    ClipLayer, Compositor, DynamicOffsetLayer, ExplicitLayer, Layer, LeftoverStateLayer,
+    OffsetLayer, OpacityLayer, PictureLayer, Shadow, ShadowLayer, StateCommandType, Texture,
+    TextureLayer, TiledLayer, TransformationLayer,
 };
 use skia_safe::gpu::{Budgeted, SurfaceOrigin};
 use skia_safe::surface::BackendHandleAccess;
@@ -32,6 +32,19 @@ impl<'canvas> Compositor for SkiaCachelessCompositor<'canvas> {
     }
 
     fn compose_offset(&mut self, layer: &OffsetLayer) {
+        let offset = Vector::from(layer.offset().as_tuple_f32());
+
+        self.canvas.save();
+        self.canvas.translate(offset);
+
+        for layer in layer.layers() {
+            layer.compose(self);
+        }
+
+        self.canvas.restore();
+    }
+
+    fn compose_dynamic_offset(&mut self, layer: &DynamicOffsetLayer) {
         let offset = Vector::from(layer.offset().as_tuple_f32());
 
         self.canvas.save();

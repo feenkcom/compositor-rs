@@ -2,8 +2,8 @@ use compositor::{Geometry, Layer, LeftoverStateLayer, Matrix, Point, StateComman
 use std::sync::Arc;
 use value_box::{ReturnBoxerResult, ValueBox, ValueBoxIntoRaw, ValueBoxPointer};
 
-#[no_mangle]
-pub fn compositor_leftover_clip_command(
+#[unsafe(no_mangle)]
+pub extern "C" fn compositor_leftover_clip_command(
     geometry: *mut ValueBox<Geometry>,
     offset_x: f32,
     offset_y: f32,
@@ -19,8 +19,8 @@ pub fn compositor_leftover_clip_command(
         .into_raw()
 }
 
-#[no_mangle]
-pub fn compositor_leftover_transform_command(
+#[unsafe(no_mangle)]
+pub extern "C" fn compositor_leftover_transform_command(
     matrix: *mut ValueBox<Matrix>,
     offset_x: f32,
     offset_y: f32,
@@ -36,18 +36,18 @@ pub fn compositor_leftover_transform_command(
         .into_raw()
 }
 
-#[no_mangle]
-pub fn compositor_leftover_command_drop(command: *mut ValueBox<StateCommand>) {
+#[unsafe(no_mangle)]
+pub extern "C" fn compositor_leftover_command_drop(command: *mut ValueBox<StateCommand>) {
     command.release();
 }
 
-#[no_mangle]
-pub fn compositor_leftover_commands_new() -> *mut ValueBox<Vec<StateCommand>> {
+#[unsafe(no_mangle)]
+pub extern "C" fn compositor_leftover_commands_new() -> *mut ValueBox<Vec<StateCommand>> {
     ValueBox::new(vec![]).into_raw()
 }
 
-#[no_mangle]
-pub fn compositor_leftover_commands_add(
+#[unsafe(no_mangle)]
+pub extern "C" fn compositor_leftover_commands_add(
     commands: *mut ValueBox<Vec<StateCommand>>,
     command: *mut ValueBox<StateCommand>,
 ) {
@@ -60,13 +60,13 @@ pub fn compositor_leftover_commands_add(
         .log();
 }
 
-#[no_mangle]
-pub fn compositor_leftover_commands_drop(commands: *mut ValueBox<Vec<StateCommand>>) {
+#[unsafe(no_mangle)]
+pub extern "C" fn compositor_leftover_commands_drop(commands: *mut ValueBox<Vec<StateCommand>>) {
     commands.release();
 }
 
-#[no_mangle]
-pub fn compositor_leftover_layer_new(
+#[unsafe(no_mangle)]
+pub extern "C" fn compositor_leftover_layer_new(
     commands: *mut ValueBox<Vec<StateCommand>>,
 ) -> *mut ValueBox<Arc<dyn Layer>> {
     commands

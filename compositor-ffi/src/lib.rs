@@ -8,6 +8,7 @@ pub use layer::*;
 pub use layer_clip::*;
 pub use layer_leftover::*;
 pub use layer_offset::*;
+pub use layer_offset_dynamic::*;
 pub use layer_opacity::*;
 pub use layer_picture::*;
 pub use layer_shadow::*;
@@ -33,6 +34,7 @@ mod matrix;
 mod path;
 mod picture;
 mod shadow;
+mod layer_offset_dynamic;
 
 cfg_if! {
     if #[cfg(feature = "phlow")] {

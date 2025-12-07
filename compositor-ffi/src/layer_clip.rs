@@ -4,13 +4,13 @@ use value_box::{ValueBox, ValueBoxIntoRaw, ValueBoxPointer};
 
 use compositor::{ClipLayer, Geometry, Layer, Point};
 
-#[no_mangle]
-pub fn compositor_clip_layer_none() -> *mut ValueBox<Arc<dyn Layer>> {
+#[unsafe(no_mangle)]
+pub extern "C" fn compositor_clip_layer_none() -> *mut ValueBox<Arc<dyn Layer>> {
     ValueBox::new(Arc::new(ClipLayer::none()) as Arc<dyn Layer>).into_raw()
 }
 
-#[no_mangle]
-pub fn compositor_clip_layer_new(
+#[unsafe(no_mangle)]
+pub extern "C" fn compositor_clip_layer_new(
     geometry: *mut ValueBox<Geometry>,
     offset_x: f32,
     offset_y: f32,

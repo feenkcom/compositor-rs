@@ -3,8 +3,8 @@ use compositor_texture::TextureDesc;
 use std::sync::Arc;
 use value_box::ValueBox;
 
-#[no_mangle]
-pub fn compositor_texture_layer_new_borrowed(
+#[unsafe(no_mangle)]
+pub extern "C" fn compositor_texture_layer_new_borrowed(
     width: u32,
     height: u32,
     rendering: extern "C" fn(*const TextureDesc, *const std::ffi::c_void),

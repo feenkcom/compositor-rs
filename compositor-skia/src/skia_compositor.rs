@@ -3,17 +3,13 @@ use std::sync::Arc;
 
 use log::error;
 
-use compositor::{
-    ClipLayer, Compositor, ExplicitLayer, Extent, Layer, LeftoverStateLayer, OffsetLayer,
-    OpacityLayer, Picture, PictureLayer, Point, Shadow, ShadowLayer, StateCommandType, Texture,
-    TextureLayer, TiledLayer, TransformationLayer,
-};
+use compositor::{ClipLayer, Compositor, DynamicOffsetLayer, ExplicitLayer, Extent, Layer, LeftoverStateLayer, OffsetLayer, OpacityLayer, Picture, PictureLayer, Point, Shadow, ShadowLayer, StateCommandType, Texture, TextureLayer, TiledLayer, TransformationLayer};
 use compositor_skia_platform::Platform;
 use skia_safe::gpu::{Budgeted, SurfaceOrigin};
 use skia_safe::surface::BackendHandleAccess;
 use skia_safe::{
-    gpu, AlphaType, Canvas, Color4f, ColorType, Font, Image,
-    ImageInfo, Matrix, Paint, PictureRecorder, Point as SkPoint, RRect, Rect, Size, Vector,
+    gpu, AlphaType, Canvas, Color4f, ColorType, Font, Image, ImageInfo, Matrix, Paint,
+    PictureRecorder, Point as SkPoint, RRect, Rect, Size, Vector,
 };
 
 use crate::renderers::PictureToRasterize;
@@ -52,6 +48,19 @@ impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
     }
 
     fn compose_offset(&mut self, layer: &OffsetLayer) {
+        let offset = Vector::from(layer.offset().as_tuple_f32());
+
+        self.canvas.save();
+        self.canvas.translate(offset);
+
+        for layer in layer.layers() {
+            layer.compose(self);
+        }
+
+        self.canvas.restore();
+    }
+
+    fn compose_dynamic_offset(&mut self, layer: &DynamicOffsetLayer) {
         let offset = Vector::from(layer.offset().as_tuple_f32());
 
         self.canvas.save();

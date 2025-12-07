@@ -5,7 +5,7 @@ use value_box::{ReturnBoxerResult, ValueBox, ValueBoxPointer};
 use compositor::{Compositor, Layer};
 use compositor_skia::{Cache, Canvas, SkiaCachelessCompositor, SkiaCompositor};
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub fn skia_compositor_compose(
     layer: *mut ValueBox<Arc<dyn Layer>>,
     canvas: *mut ReferenceBox<Canvas>,
@@ -22,7 +22,7 @@ pub fn skia_compositor_compose(
         .log();
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub fn skia_cacheless_compositor_compose(
     layer: *mut ValueBox<Arc<dyn Layer>>,
     canvas: *mut ReferenceBox<Canvas>,
@@ -36,12 +36,12 @@ pub fn skia_cacheless_compositor_compose(
         .log();
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub fn skia_compositor_cache_new() -> *mut ValueBox<Cache> {
     ValueBox::new(Cache::new()).into_raw()
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub fn skia_compositor_cache_drop(cache: *mut ValueBox<Cache>) {
     cache.release();
 }

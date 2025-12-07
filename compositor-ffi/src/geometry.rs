@@ -2,13 +2,13 @@ use value_box::{ValueBox, ValueBoxIntoRaw, ValueBoxPointer};
 
 use compositor::{Circle, Geometry, Path, Point, Radius, Rectangle, RoundedRectangle};
 
-#[no_mangle]
-pub fn compositor_geometry_none() -> *mut ValueBox<Geometry> {
+#[unsafe(no_mangle)]
+pub extern "C" fn compositor_geometry_none() -> *mut ValueBox<Geometry> {
     ValueBox::new(Geometry::None).into_raw()
 }
 
-#[no_mangle]
-pub fn compositor_geometry_new_rectangle(
+#[unsafe(no_mangle)]
+pub extern "C" fn compositor_geometry_new_rectangle(
     left: f32,
     top: f32,
     width: f32,
@@ -20,8 +20,8 @@ pub fn compositor_geometry_new_rectangle(
     .into_raw()
 }
 
-#[no_mangle]
-pub fn compositor_geometry_new_rounded_rectangle(
+#[unsafe(no_mangle)]
+pub extern "C" fn compositor_geometry_new_rounded_rectangle(
     left: f32,
     top: f32,
     width: f32,
@@ -45,8 +45,8 @@ pub fn compositor_geometry_new_rounded_rectangle(
     .into_raw()
 }
 
-#[no_mangle]
-pub fn compositor_geometry_new_circle(
+#[unsafe(no_mangle)]
+pub extern "C" fn compositor_geometry_new_circle(
     center_x: f32,
     center_y: f32,
     radius: f32,
@@ -59,19 +59,19 @@ pub fn compositor_geometry_new_circle(
 }
 
 /// Creates a new geometry from a given path consuming that path
-#[no_mangle]
-pub fn compositor_geometry_new_path(path: *mut ValueBox<Path>) -> *mut ValueBox<Geometry> {
+#[unsafe(no_mangle)]
+pub extern "C" fn compositor_geometry_new_path(path: *mut ValueBox<Path>) -> *mut ValueBox<Geometry> {
     path.take_value()
         .map(|path| ValueBox::new(Geometry::Path(path)))
         .into_raw()
 }
 
-#[no_mangle]
-pub fn compositor_geometry_drop(path: *mut ValueBox<Geometry>) {
+#[unsafe(no_mangle)]
+pub extern "C" fn compositor_geometry_drop(path: *mut ValueBox<Geometry>) {
     path.release();
 }
 
-// #[no_mangle]
+// #[unsafe(no_mangle)]
 // pub fn skia_clip_layer_rrect(
 //     left: scalar,
 //     top: scalar,

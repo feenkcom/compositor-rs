@@ -8,13 +8,13 @@ use compositor::{
     TiledLayerScaleFactor,
 };
 
-#[no_mangle]
-pub fn compositor_tiled_layer_default() -> *mut ValueBox<Arc<dyn Layer>> {
+#[unsafe(no_mangle)]
+pub extern "C" fn compositor_tiled_layer_default() -> *mut ValueBox<Arc<dyn Layer>> {
     value_box!(Arc::new(TiledLayer::default()) as Arc<dyn Layer>).into_raw()
 }
 
-#[no_mangle]
-pub fn compositor_tiled_layer_new(
+#[unsafe(no_mangle)]
+pub extern "C" fn compositor_tiled_layer_new(
     camera_x: f32,
     camera_y: f32,
     width: f32,
@@ -30,8 +30,8 @@ pub fn compositor_tiled_layer_new(
     .into_raw()
 }
 
-#[no_mangle]
-pub fn compositor_tiled_layer_add_figure(
+#[unsafe(no_mangle)]
+pub extern "C" fn compositor_tiled_layer_add_figure(
     layer: *mut ValueBox<Arc<dyn Layer>>,
     id: TiledFigureId,
     offset_x: f32,
@@ -55,8 +55,8 @@ pub fn compositor_tiled_layer_add_figure(
         .log();
 }
 
-#[no_mangle]
-pub fn compositor_tiled_layer_figure_set_picture(
+#[unsafe(no_mangle)]
+pub extern "C" fn compositor_tiled_layer_figure_set_picture(
     tiled_layer: *mut ValueBox<Arc<dyn Layer>>,
     id: TiledFigureId,
     picture: *mut ValueBox<Arc<dyn Picture>>,
@@ -79,8 +79,8 @@ pub fn compositor_tiled_layer_figure_set_picture(
         .log();
 }
 
-#[no_mangle]
-pub fn compositor_tiled_layer_figure_set_picture_layer(
+#[unsafe(no_mangle)]
+pub extern "C" fn compositor_tiled_layer_figure_set_picture_layer(
     tiled_layer: *mut ValueBox<Arc<dyn Layer>>,
     id: TiledFigureId,
     picture_layer: *mut ValueBox<Arc<dyn Layer>>,
@@ -106,8 +106,8 @@ pub fn compositor_tiled_layer_figure_set_picture_layer(
         .log();
 }
 
-#[no_mangle]
-pub fn compositor_tiled_layer_set_camera_position(
+#[unsafe(no_mangle)]
+pub extern "C" fn compositor_tiled_layer_set_camera_position(
     tiled_layer: *mut ValueBox<Arc<dyn Layer>>,
     camera_x: f32,
     camera_y: f32,
@@ -126,8 +126,8 @@ pub fn compositor_tiled_layer_set_camera_position(
         .log();
 }
 
-#[no_mangle]
-pub fn compositor_tiled_layer_scale_value(tiled_layer: *mut ValueBox<Arc<dyn Layer>>) -> f32 {
+#[unsafe(no_mangle)]
+pub extern "C" fn compositor_tiled_layer_scale_value(tiled_layer: *mut ValueBox<Arc<dyn Layer>>) -> f32 {
     tiled_layer
         .with_ref_ok(|tiled_layer| {
             let tiled_layer = tiled_layer
@@ -140,8 +140,8 @@ pub fn compositor_tiled_layer_scale_value(tiled_layer: *mut ValueBox<Arc<dyn Lay
         .or_log(1.0)
 }
 
-#[no_mangle]
-pub fn compositor_tiled_layer_set_scale_in_factor(
+#[unsafe(no_mangle)]
+pub extern "C" fn compositor_tiled_layer_set_scale_in_factor(
     tiled_layer: *mut ValueBox<Arc<dyn Layer>>,
     scale: f32,
 ) {
@@ -159,8 +159,8 @@ pub fn compositor_tiled_layer_set_scale_in_factor(
         .log();
 }
 
-#[no_mangle]
-pub fn compositor_tiled_layer_set_scale_out_factor(
+#[unsafe(no_mangle)]
+pub extern "C" fn compositor_tiled_layer_set_scale_out_factor(
     tiled_layer: *mut ValueBox<Arc<dyn Layer>>,
     scale: f32,
 ) {
@@ -178,8 +178,8 @@ pub fn compositor_tiled_layer_set_scale_out_factor(
         .log();
 }
 
-#[no_mangle]
-pub fn compositor_tiled_layer_visible_figures(
+#[unsafe(no_mangle)]
+pub extern "C" fn compositor_tiled_layer_visible_figures(
     tiled_layer: *mut ValueBox<Arc<dyn Layer>>,
     ids: *mut ValueBox<ArrayBox<u32>>,
 ) {
@@ -203,8 +203,8 @@ pub fn compositor_tiled_layer_visible_figures(
         .log();
 }
 
-#[no_mangle]
-pub fn compositor_tiled_layer_visible_figures_without_pictures(
+#[unsafe(no_mangle)]
+pub extern "C" fn compositor_tiled_layer_visible_figures_without_pictures(
     tiled_layer: *mut ValueBox<Arc<dyn Layer>>,
     ids: *mut ValueBox<ArrayBox<u32>>,
 ) {
@@ -222,8 +222,8 @@ pub fn compositor_tiled_layer_visible_figures_without_pictures(
         .log();
 }
 
-#[no_mangle]
-pub fn compositor_tiled_layer_visible_figures_within_tiles_without_pictures(
+#[unsafe(no_mangle)]
+pub extern "C" fn compositor_tiled_layer_visible_figures_within_tiles_without_pictures(
     tiled_layer: *mut ValueBox<Arc<dyn Layer>>,
     ids: *mut ValueBox<ArrayBox<u32>>,
 ) {

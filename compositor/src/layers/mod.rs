@@ -9,6 +9,7 @@ pub use shadow::{Shadow, ShadowLayer};
 pub use texture::*;
 pub use tiled::{TiledFigureId, TiledLayer, TiledLayerFigure, TiledLayerScaleFactor};
 pub use transformation::TransformationLayer;
+pub use offset_dynamic::*;
 
 mod clip;
 mod explicit;
@@ -21,3 +22,4 @@ mod shadow;
 mod texture;
 mod tiled;
 mod transformation;
+mod offset_dynamic;
