@@ -3,7 +3,11 @@ use std::sync::Arc;
 
 use log::error;
 
-use compositor::{ClipLayer, Compositor, DynamicOffsetLayer, ExplicitLayer, Extent, Layer, LeftoverStateLayer, OffsetLayer, OpacityLayer, Picture, PictureLayer, Point, Shadow, ShadowLayer, StateCommandType, Texture, TextureLayer, TiledLayer, TransformationLayer};
+use compositor::{
+    ClipLayer, Compositor, DynamicOffsetLayer, ExplicitLayer, Extent, Layer, LeftoverStateLayer,
+    OffsetLayer, OpacityLayer, Picture, PictureLayer, Point, Shadow, ShadowLayer, StateCommandType,
+    Texture, TextureLayer, TiledLayer, TransformationLayer,
+};
 use compositor_skia_platform::Platform;
 use skia_safe::gpu::{Budgeted, SurfaceOrigin};
 use skia_safe::surface::BackendHandleAccess;
@@ -61,16 +65,18 @@ impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
     }
 
     fn compose_dynamic_offset(&mut self, layer: &DynamicOffsetLayer) {
-        let offset = Vector::from(layer.offset().as_tuple_f32());
+        if let Some(offset) = layer.offset() {
+            let offset = Vector::from(offset.as_tuple_f32());
 
-        self.canvas.save();
-        self.canvas.translate(offset);
+            self.canvas.save();
+            self.canvas.translate(offset);
 
-        for layer in layer.layers() {
-            layer.compose(self);
+            for layer in layer.layers() {
+                layer.compose(self);
+            }
+
+            self.canvas.restore();
         }
-
-        self.canvas.restore();
     }
 
     fn compose_opacity(&mut self, layer: &OpacityLayer) {

@@ -60,7 +60,9 @@ pub extern "C" fn compositor_geometry_new_circle(
 
 /// Creates a new geometry from a given path consuming that path
 #[unsafe(no_mangle)]
-pub extern "C" fn compositor_geometry_new_path(path: *mut ValueBox<Path>) -> *mut ValueBox<Geometry> {
+pub extern "C" fn compositor_geometry_new_path(
+    path: *mut ValueBox<Path>,
+) -> *mut ValueBox<Geometry> {
     path.take_value()
         .map(|path| ValueBox::new(Geometry::Path(path)))
         .into_raw()

@@ -4,7 +4,9 @@ use value_box::{ValueBox, ValueBoxIntoRaw, ValueBoxPointer};
 use compositor::{Matrix, Scalar};
 
 #[unsafe(no_mangle)]
-pub extern "C" fn compositor_matrix_new(values: *mut ValueBox<ArrayBox<f32>>) -> *mut ValueBox<Matrix> {
+pub extern "C" fn compositor_matrix_new(
+    values: *mut ValueBox<ArrayBox<f32>>,
+) -> *mut ValueBox<Matrix> {
     values
         .with_ref_ok(|values| {
             let buffer: &mut [f32; 9] = values.to_slice().try_into().unwrap();

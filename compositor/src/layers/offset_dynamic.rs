@@ -8,12 +8,12 @@ use std::sync::Arc;
 pub struct DynamicOffsetLayer {
     layers: Vec<Arc<dyn Layer>>,
     payload: Payload,
-    offset_fn: unsafe extern "C" fn(*mut c_void) -> Point,
+    offset_fn: unsafe extern "C" fn(*mut c_void, *mut Point) -> bool,
 }
 
 impl DynamicOffsetLayer {
     pub fn new(
-        offset_fn: unsafe extern "C" fn(*mut c_void) -> Point,
+        offset_fn: unsafe extern "C" fn(*mut c_void, *mut Point) -> bool,
         payload: *mut c_void,
         clone_fn: unsafe extern "C" fn(*mut c_void) -> *mut c_void,
         free_fn: unsafe extern "C" fn(*mut c_void),
@@ -29,8 +29,13 @@ impl DynamicOffsetLayer {
         }
     }
 
-    pub fn offset(&self) -> Point {
-        unsafe { (self.offset_fn)(self.payload.payload) }
+    pub fn offset(&self) -> Option<Point> {
+        let mut point = Point::zero();
+        let is_available = unsafe { (self.offset_fn)(self.payload.payload, &mut point) };
+        if !is_available {
+            return None;
+        }
+        Some(point)
     }
 }
 

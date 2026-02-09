@@ -127,7 +127,9 @@ pub extern "C" fn compositor_tiled_layer_set_camera_position(
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn compositor_tiled_layer_scale_value(tiled_layer: *mut ValueBox<Arc<dyn Layer>>) -> f32 {
+pub extern "C" fn compositor_tiled_layer_scale_value(
+    tiled_layer: *mut ValueBox<Arc<dyn Layer>>,
+) -> f32 {
     tiled_layer
         .with_ref_ok(|tiled_layer| {
             let tiled_layer = tiled_layer

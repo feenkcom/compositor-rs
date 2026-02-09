@@ -24,6 +24,7 @@ mod layer;
 mod layer_clip;
 mod layer_leftover;
 mod layer_offset;
+mod layer_offset_dynamic;
 mod layer_opacity;
 mod layer_picture;
 mod layer_shadow;
@@ -34,7 +35,6 @@ mod matrix;
 mod path;
 mod picture;
 mod shadow;
-mod layer_offset_dynamic;
 
 cfg_if! {
     if #[cfg(feature = "phlow")] {

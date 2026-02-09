@@ -15,7 +15,9 @@ pub extern "C" fn compositor_layer_clone(
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn compositor_layer_debug(layer: *mut ValueBox<Arc<dyn Layer>>) -> *mut ValueBox<StringBox> {
+pub extern "C" fn compositor_layer_debug(
+    layer: *mut ValueBox<Arc<dyn Layer>>,
+) -> *mut ValueBox<StringBox> {
     layer
         .with_ref_ok(|layer| ValueBox::new(StringBox::from_string(format!("{:#?}", layer))))
         .into_raw()
