@@ -27,6 +27,12 @@ pub struct AngleContext {
     height: i32,
 }
 
+#[derive(Debug, Clone, Copy)]
+pub struct AnglePlatform {
+    pub display: *mut c_void,
+    pub context: *mut c_void,
+}
+
 impl AngleContext {
     pub fn new(window: *mut c_void, width: i32, height: i32) -> Result<Self> {
         let window: HWND = unsafe { transmute(window) };
