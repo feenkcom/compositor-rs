@@ -34,6 +34,13 @@ pub struct AnglePlatform {
 }
 
 impl AngleContext {
+    pub fn platform(&self) -> Option<AnglePlatform> {
+        self.egl_context.as_ref().map(|window_context| AnglePlatform {
+            display: self.egl_display as *mut c_void,
+            context: window_context.egl_context as *mut c_void,
+        })
+    }
+
     pub fn new(window: *mut c_void, width: i32, height: i32) -> Result<Self> {
         let window: HWND = unsafe { transmute(window) };
 
