@@ -14,7 +14,6 @@ use windows::Win32::Foundation::HWND;
 use windows::Win32::Graphics::Gdi::GetDC;
 
 use crate::angle_utils::*;
-use crate::{PlatformCompositor, PlatformContext};
 
 pub const SAMPLE_COUNT: u32 = 1;
 
@@ -37,7 +36,7 @@ impl AngleContext {
     pub fn new(window: *mut c_void, width: i32, height: i32) -> Result<Self> {
         let window: HWND = unsafe { transmute(window) };
 
-        let hdc = unsafe { GetDC(window) };
+        let hdc = unsafe { GetDC(Some(window)) };
         let (egl_display, _major_version, _minor_version) = get_display(hdc)?;
 
         let mut angle_context = Self {
