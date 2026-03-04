@@ -18,6 +18,16 @@ pub enum PlatformContext {
 }
 
 impl PlatformContext {
+    pub fn platform(&self) -> Option<crate::Platform> {
+        match self {
+            #[cfg(target_os = "macos")]
+            PlatformContext::Metal(context) => Some(crate::Platform::Metal(context.platform())),
+            #[cfg(target_os = "windows")]
+            PlatformContext::Angle(context) => context.platform().map(crate::Platform::Angle),
+            _ => None,
+        }
+    }
+
     pub fn with_surface(&mut self, callback: impl FnOnce(&mut Surface)) {
         match self {
             #[cfg(target_os = "macos")]

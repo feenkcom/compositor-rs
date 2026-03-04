@@ -25,6 +25,10 @@ pub struct MetalContext {
 }
 
 impl MetalContext {
+    pub fn platform(&self) -> MetalPlatform {
+        self.platform.clone()
+    }
+
     pub fn new(ns_view: cocoa_id, size: Option<CGSize>) -> Self {
         let device = Device::system_default().expect("no device found");
 
@@ -107,4 +111,3 @@ impl MetalContext {
         command_buffer.commit()
     }
 }
-
