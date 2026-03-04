@@ -40,16 +40,10 @@ skia-safe = { version = ">=0.90", default-features = false, features = ["gl", "e
 
 [target.'cfg(target_os="windows")'.dependencies]
 skia-safe = { version = ">=0.90", default-features = false, features = ["gl", "d3d"] }
-
-[target.'cfg(target_os="windows")'.dependencies.mozangle]
-git = "https://github.com/syrel/mozangle"
-rev = "8ad3227cbfe59b9ddbaa95379b5d45804427630d"
-optional = true
-features = [ "egl" ]
+mozangle = { git = "https://github.com/syrel/mozangle", rev = "8ad3227cbfe59b9ddbaa95379b5d45804427630d", features = [ "egl" ] }
 
 [target.'cfg(target_os="windows")'.dependencies.windows]
 version = "0.62"
-optional = true
 features = [
     "Foundation",
     "Win32_Foundation",
@@ -70,8 +64,6 @@ features = [
 [features]
 raw-window-handle-5 = ["dep:raw-window-handle-5"]
 raw-window-handle-6 = ["dep:raw-window-handle-6"]
-d3d = ["skia-safe/d3d", "windows" ]
-angle = ["skia-safe/gl", "mozangle"]
 x11 = ["skia-safe/x11", "dep:x11"]
 wayland = [ "skia-safe/wayland", "dep:wayland-sys" ]
 egl = ["skia-safe/egl", "khronos-egl", "libloading" ]

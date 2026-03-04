@@ -4,9 +4,9 @@ use skia_safe::{ISize, Surface};
 pub enum PlatformContext {
     #[cfg(target_os = "macos")]
     Metal(crate::MetalContext),
-    #[cfg(feature = "d3d")]
+    #[cfg(target_os = "windows")]
     D3D(crate::D3D12Context),
-    #[cfg(feature = "angle")]
+    #[cfg(target_os = "windows")]
     Angle(crate::AngleContext),
     #[cfg(feature = "x11")]
     XlibGl(crate::XlibGlWindowContext),
@@ -22,9 +22,9 @@ impl PlatformContext {
         match self {
             #[cfg(target_os = "macos")]
             PlatformContext::Metal(context) => context.with_surface(callback),
-            #[cfg(feature = "d3d")]
+            #[cfg(target_os = "windows")]
             PlatformContext::D3D(context) => context.with_surface(callback),
-            #[cfg(feature = "angle")]
+            #[cfg(target_os = "windows")]
             PlatformContext::Angle(context) => context
                 .with_surface(callback)
                 .unwrap_or_else(|error| error!("Failed to draw on a surface: {}", error)),
@@ -48,9 +48,9 @@ impl PlatformContext {
         match self {
             #[cfg(target_os = "macos")]
             PlatformContext::Metal(context) => context.resize_surface(size),
-            #[cfg(feature = "d3d")]
+            #[cfg(target_os = "windows")]
             PlatformContext::D3D(context) => context.resize(size),
-            #[cfg(feature = "angle")]
+            #[cfg(target_os = "windows")]
             PlatformContext::Angle(context) => context
                 .resize_surface(size)
                 .unwrap_or_else(|error| error!("Failed to resize a surface: {:?}", error)),

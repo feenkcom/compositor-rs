@@ -6,7 +6,7 @@ use core_graphics_types::geometry::CGSize;
 use foreign_types_shared::{ForeignType, ForeignTypeRef};
 use metal::{CommandQueue, Device, MTLPixelFormat, MetalDrawableRef, MetalLayer};
 use skia_safe::gpu::mtl::BackendContext;
-use skia_safe::gpu::{mtl, BackendRenderTarget, DirectContext, SurfaceOrigin};
+use skia_safe::gpu::{mtl, DirectContext, SurfaceOrigin};
 use skia_safe::{gpu, scalar, ColorType, ISize, Size, Surface};
 
 #[allow(dead_code)]
@@ -53,8 +53,7 @@ impl MetalContext {
             )
         };
 
-        let direct_context = DirectContext::new_metal(&backend_context, None).unwrap();
-        //let direct_context = gpu::direct_contexts::make_metal(&backend_context, None).unwrap();
+        let direct_context = gpu::direct_contexts::make_metal(&backend_context, None).unwrap();
 
         MetalContext {
             platform: MetalPlatform { device, queue },
@@ -79,8 +78,7 @@ impl MetalContext {
             let texture_info =
                 unsafe { mtl::TextureInfo::new(drawable.texture().as_ptr() as mtl::Handle) };
 
-            let backend_render_target = BackendRenderTarget::new_metal(
-                //let backend_render_target = gpu::backend_render_targets::make_mtl(
+            let backend_render_target = gpu::backend_render_targets::make_mtl(
                 (drawable_size.width as i32, drawable_size.height as i32),
                 &texture_info,
             );
@@ -109,34 +107,4 @@ impl MetalContext {
         command_buffer.commit()
     }
 }
-//
-// pub struct MetalTexture {
-//     texture: Texture,
-//     backend_texture: BackendTexture,
-// }
-//
-// impl MetalTexture {
-//     pub fn offscreen(width: u32, height: u32) -> Self {
-//         let device = Device::system_default().expect("no device found");
-//         let texture_descriptor = TextureDescriptor::new();
-//         texture_descriptor.set_width(width as NSUInteger);
-//         texture_descriptor.set_height(height as NSUInteger);
-//         texture_descriptor.set_pixel_format(MTLPixelFormat::BGRA8Unorm);
-//
-//         let texture = device.new_texture(&texture_descriptor);
-//
-//         let texture_info = unsafe { mtl::TextureInfo::new(texture.as_ptr() as mtl::Handle) };
-//
-//         let backend_texture =
-//             unsafe { BackendTexture::new_metal((width as i32, height as i32), Mipmapped::No, &texture_info) };
-//
-//         Self {
-//             texture: Texture::Metal(texture),
-//             backend_texture,
-//         }
-//     }
-//
-//     pub fn as_backend_texture(&self) -> BackendTexture {
-//         self.backend_texture.clone()
-//     }
-// }
+

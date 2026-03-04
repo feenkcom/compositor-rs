@@ -8,9 +8,9 @@ extern crate log;
 #[cfg(target_os = "emscripten")]
 pub use webgl::*;
 
-#[cfg(feature = "angle")]
+#[cfg(target_os = "windows")]
 pub use self::angle::*;
-#[cfg(feature = "d3d")]
+#[cfg(target_os = "windows")]
 pub use self::d3d::*;
 #[cfg(all(feature = "egl", target_os = "android"))]
 pub use self::egl_android::*;
@@ -29,12 +29,12 @@ pub mod metal_macos;
 #[cfg(target_os = "ios")]
 pub mod metal_ios;
 
-#[cfg(feature = "d3d")]
+#[cfg(target_os = "windows")]
 pub mod d3d;
 
-#[cfg(feature = "angle")]
+#[cfg(target_os = "windows")]
 pub mod angle;
-#[cfg(feature = "angle")]
+#[cfg(target_os = "windows")]
 pub mod angle_utils;
 
 mod platform_context;
