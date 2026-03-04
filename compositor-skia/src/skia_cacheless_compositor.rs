@@ -1,14 +1,11 @@
-use crate::textures::disassemble_backend_texture;
 use crate::utils::{clip_canvas, draw_shadow};
 use crate::{as_skia_point, into_skia_matrix, to_skia_point, SkiaDrawable};
 use compositor::{
     ClipLayer, Compositor, DynamicOffsetLayer, ExplicitLayer, Layer, LeftoverStateLayer,
-    OffsetLayer, OpacityLayer, PictureLayer, Shadow, ShadowLayer, StateCommandType, Texture,
+    OffsetLayer, OpacityLayer, PictureLayer, Shadow, ShadowLayer, StateCommandType,
     TextureLayer, TiledLayer, TransformationLayer,
 };
-use skia_safe::gpu::{Budgeted, SurfaceOrigin};
-use skia_safe::surface::BackendHandleAccess;
-use skia_safe::{gpu, Canvas, Color4f, ISize, ImageInfo, Paint, Rect, Surface, Vector};
+use skia_safe::{Canvas, Vector};
 use std::sync::Arc;
 
 #[derive(Debug)]

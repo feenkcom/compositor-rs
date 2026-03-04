@@ -15,11 +15,11 @@ impl TextureDesc {
         Some(unsafe { &*(self.texture as *const MetalTextureDesc) })
     }
 
-    pub fn try_as_egl(&self) -> Option<&EglTextureDesc> {
-        if self.backend != Backend::Egl {
+    pub fn try_as_opengl(&self) -> Option<&OpenGLTextureDesc> {
+        if self.backend != Backend::OpenGL {
             return None;
         }
-        Some(unsafe { &*(self.texture as *const EglTextureDesc) })
+        Some(unsafe { &*(self.texture as *const OpenGLTextureDesc) })
     }
 }
 
@@ -28,7 +28,7 @@ impl TextureDesc {
 pub enum Backend {
     Unsupported,
     Metal,
-    Egl,
+    OpenGL,
 }
 
 #[derive(Debug)]
@@ -58,7 +58,7 @@ impl MetalTextureDesc {
 
 #[derive(Debug)]
 #[repr(C)]
-pub struct EglTextureDesc {
+pub struct OpenGLTextureDesc {
     /// Raw EGLDisplay.
     pub display: *mut c_void,
     /// Raw EGLContext owning the texture.
@@ -78,10 +78,10 @@ pub struct EglTextureDesc {
     pub is_protected: bool,
 }
 
-impl EglTextureDesc {
+impl OpenGLTextureDesc {
     pub fn into_texture(self) -> TextureDesc {
         TextureDesc {
-            backend: Backend::Egl,
+            backend: Backend::OpenGL,
             texture: Box::into_raw(Box::new(self)) as *const c_void,
         }
     }
