@@ -35,7 +35,7 @@ rand = "0.8"
 [features]
 default = [ ]
 gpu = [ "skia-safe/gpu" ]
-angle = [ "gpu", "skia-safe/egl", "compositor-skia-platform/angle" ]
+angle = [ "gpu", "skia-safe/egl" ]
 metal = [ "gpu", "skia-safe/metal" ]
 phlow = [ "dep:phlow", "dep:phlow-extensions", "compositor/phlow" ]
 
