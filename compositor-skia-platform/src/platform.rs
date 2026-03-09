@@ -5,7 +5,7 @@ pub enum Platform {
     #[cfg(target_os = "macos")]
     Metal(crate::MetalPlatform),
     #[cfg(target_os = "windows")]
-    Angle(crate::AnglePlatform),
+    Angle(crate::OpenGLPlatform),
     Unsupported,
 }
 
@@ -18,10 +18,10 @@ impl Platform {
         }
     }
 
-    pub fn try_as_egl_handles(&self) -> Option<(*mut c_void, *mut c_void)> {
+    pub fn try_as_opengl_platform(&self) -> Option<&crate::OpenGLPlatform> {
         match self {
             #[cfg(target_os = "windows")]
-            Platform::Angle(platform) => Some((platform.display, platform.context)),
+            Platform::Angle(platform) => Some(platform),
             _ => None,
         }
     }

@@ -1,13 +1,17 @@
-use crate::angle::SAMPLE_COUNT;
+use std::convert::Infallible;
 
+use crate::angle::SAMPLE_COUNT;
 use anyhow::{bail, Result};
 use mozangle::egl::ffi::types;
 use mozangle::egl::ffi::types::EGLenum;
 use mozangle::egl::ffi::*;
 use mozangle::egl::get_proc_address;
+use num_enum::FromPrimitive;
+use std::convert::TryFrom;
 use std::mem::transmute;
+use thiserror::Error;
 use windows::Win32::Foundation::HWND;
-use windows::Win32::Graphics::Gdi::HDC;
+use windows::Win32::Graphics::Gdi::{GetDC, HDC};
 
 pub const PLATFORM_ANGLE_TYPE_D3D11_ANGLE: EGLint = 0x3208;
 pub const PLATFORM_ANGLE_ENABLE_AUTOMATIC_TRIM_ANGLE: EGLint = 0x320F;
@@ -46,7 +50,87 @@ const DISPLAY_CONFIGS: [&'static [EGLint]; 2] = [
     ],
 ];
 
-pub(crate) fn get_display(hdc: HDC) -> Result<(types::EGLDisplay, EGLint, EGLint)> {
+#[derive(Error, Debug)]
+pub enum AngleError {
+    #[error("Failed to terminate a display {0:?}")]
+    FailedToTerminateDisplay(types::EGLDisplay, #[source] EGLError),
+    #[error("Failed to create an EGL context for display {0:?}")]
+    FailedToCreateContext(types::EGLDisplay, #[source] EGLError),
+    #[error("Failed to destroy context {1:?} of display {0:?}")]
+    FailedToDestroyContext(types::EGLDisplay, types::EGLContext, #[source] EGLError),
+    #[error("Failed to create an EGL surface for display {0:?}")]
+    FailedToCreateSurface(types::EGLDisplay, #[source] EGLError),
+    #[error("Failed to destroy surface {1:?} of display {0:?}")]
+    FailedToDestroySurface(types::EGLDisplay, types::EGLSurface, #[source] EGLError),
+    #[error("Failed to swap buffers of surface {1:?} and display {0:?}")]
+    FailedToSwapBuffers(types::EGLDisplay, types::EGLSurface, #[source] EGLError),
+    #[error("Failed to make context {3:?} current with draw surface {1:?} and read surface {2:?} of display {0:?}")]
+    FailedToMakeCurrent(
+        types::EGLDisplay,
+        types::EGLSurface,
+        types::EGLSurface,
+        types::EGLContext,
+        #[source] EGLError,
+    ),
+}
+
+unsafe impl Send for AngleError {}
+unsafe impl Sync for AngleError {}
+
+/// See https://registry.khronos.org/EGL/sdk/docs/man/html/eglGetError.xhtml
+#[allow(non_camel_case_types)]
+#[derive(Error, Debug, Eq, PartialEq, FromPrimitive)]
+#[repr(u32)]
+pub enum EGLError {
+    #[error("Expected an error, but it was a success")]
+    SUCCESS = SUCCESS,
+    #[error("EGL is not initialized, or could not be initialized, for the specified EGL display connection.")]
+    NOT_INITIALIZED = NOT_INITIALIZED,
+    #[error("EGL cannot access a requested resource (for example a context is bound in another thread).")]
+    BAD_ACCESS = BAD_ACCESS,
+    #[error("EGL failed to allocate resources for the requested operation.")]
+    BAD_ALLOC = BAD_ALLOC,
+    #[error("An unrecognized attribute or attribute value was passed in the attribute list.")]
+    BAD_ATTRIBUTE = BAD_ATTRIBUTE,
+    #[error("An EGLContext argument does not name a valid EGL rendering context.")]
+    BAD_CONTEXT = BAD_CONTEXT,
+    #[error("An EGLConfig argument does not name a valid EGL frame buffer configuration.")]
+    BAD_CONFIG = BAD_CONFIG,
+    #[error("The current surface of the calling thread is a window, pixel buffer or pixmap that is no longer valid.")]
+    BAD_CURRENT_SURFACE = BAD_CURRENT_SURFACE,
+    #[error("An EGLDisplay argument does not name a valid EGL display connection.")]
+    BAD_DISPLAY = BAD_DISPLAY,
+    #[error("An EGLSurface argument does not name a valid surface (window, pixel buffer or pixmap) configured for GL rendering.")]
+    BAD_SURFACE = BAD_SURFACE,
+    #[error("Arguments are inconsistent (for example, a valid context requires buffers not supplied by a valid surface).")]
+    BAD_MATCH = BAD_MATCH,
+    #[error("One or more argument values are invalid.")]
+    BAD_PARAMETER = BAD_PARAMETER,
+    #[error("A NativePixmapType argument does not refer to a valid native pixmap.")]
+    BAD_NATIVE_PIXMAP = BAD_NATIVE_PIXMAP,
+    #[error("A NativeWindowType argument does not refer to a valid native window.")]
+    BAD_NATIVE_WINDOW = BAD_NATIVE_WINDOW,
+    #[error("A power management event has occurred. The application must destroy all contexts and reinitialise OpenGL ES state and objects to continue rendering.")]
+    CONTEXT_LOST = CONTEXT_LOST,
+    #[error("Unknown EGL Error: {0}")]
+    #[num_enum(catch_all)]
+    UNKNOWN(u32),
+}
+
+pub(crate) fn get_error() -> EGLError {
+    let result = unsafe { GetError() };
+    EGLError::from(result as u32)
+}
+
+pub(crate) fn get_display(window: HWND) -> Result<(types::EGLDisplay, EGLint, EGLint)> {
+    let window = if window.is_invalid() {
+        None
+    } else {
+        Some(window)
+    };
+
+    let hdc = unsafe { GetDC(window) };
+
     for config in &DISPLAY_CONFIGS {
         let display =
             unsafe { GetPlatformDisplayEXT(PLATFORM_ANGLE_ANGLE, transmute(hdc), config.as_ptr()) };
@@ -84,7 +168,7 @@ pub(crate) fn terminate_display(display: types::EGLDisplay) -> Result<()> {
     if result == TRUE {
         Ok(())
     } else {
-        bail!("Failed to terminate egl display")
+        Err(AngleError::FailedToTerminateDisplay(display, get_error()).into())
     }
 }
 
@@ -154,7 +238,7 @@ pub(crate) fn create_context(
         )
     };
     if egl_context == NO_CONTEXT {
-        bail!("Failed to create egl context")
+        Err(AngleError::FailedToCreateContext(display, get_error()).into())
     } else {
         Ok(egl_context)
     }
@@ -173,7 +257,7 @@ pub(crate) fn destroy_egl_context(
     if result == TRUE {
         Ok(())
     } else {
-        bail!("Failed to destroy egl context")
+        Err(AngleError::FailedToDestroyContext(display, context, get_error()).into())
     }
 }
 
@@ -181,18 +265,20 @@ pub(crate) fn create_window_surface(
     display: types::EGLDisplay,
     surface_config: types::EGLConfig,
     window: HWND,
-    width: i32,
-    height: i32,
+    size: Option<(i32, i32)>,
 ) -> Result<types::EGLSurface> {
-    let surface_attributes: &[EGLint] = &[
-        FIXED_SIZE_ANGLE,
-        int(TRUE),
-        int(WIDTH),
-        width,
-        int(HEIGHT),
-        height,
-        int(NONE),
-    ];
+    let surface_attributes: &[EGLint] = match size {
+        None => &[int(NONE)],
+        Some((width, height)) => &[
+            FIXED_SIZE_ANGLE,
+            int(TRUE),
+            int(WIDTH),
+            width,
+            int(HEIGHT),
+            height,
+            int(NONE),
+        ],
+    };
 
     let surface: types::EGLSurface = unsafe {
         CreateWindowSurface(
@@ -203,7 +289,7 @@ pub(crate) fn create_window_surface(
         )
     };
     if surface == NO_SURFACE {
-        bail!("Failed to create egl window surface")
+        Err(AngleError::FailedToCreateSurface(display, get_error()).into())
     } else {
         Ok(surface)
     }
@@ -221,7 +307,7 @@ pub(crate) fn destroy_window_surface(
     if result == TRUE {
         Ok(())
     } else {
-        bail!("Failed to destroy surface")
+        Err(AngleError::FailedToDestroySurface(display, surface, get_error()).into())
     }
 }
 
@@ -236,7 +322,14 @@ pub(crate) fn make_current(
     if result == TRUE {
         Ok(())
     } else {
-        bail!("Failed to make current")
+        Err(AngleError::FailedToMakeCurrent(
+            display,
+            draw_surface,
+            read_surface,
+            context,
+            get_error(),
+        )
+        .into())
     }
 }
 
@@ -246,7 +339,7 @@ pub(crate) fn swap_buffers(display: types::EGLDisplay, surface: types::EGLSurfac
     if result == TRUE {
         Ok(())
     } else {
-        bail!("Failed to swap buffers")
+        Err(AngleError::FailedToSwapBuffers(display, surface, get_error()).into())
     }
 }
 

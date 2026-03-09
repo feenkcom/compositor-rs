@@ -10,11 +10,8 @@ use compositor::{
 };
 use compositor_skia_platform::Platform;
 use skia_safe::gpu::{Budgeted, SurfaceOrigin};
-use skia_safe::surface::BackendHandleAccess;
-use skia_safe::{
-    gpu, AlphaType, Canvas, Color4f, ColorType, Font, Image, ImageInfo, Matrix, Paint,
-    PictureRecorder, Point as SkPoint, RRect, Rect, Size, Vector,
-};
+use skia_safe::surface::{BackendHandleAccess, ContentChangeMode};
+use skia_safe::{gpu, AlphaType, Canvas, Color4f, ColorType, FilterMode, Font, Image, ImageInfo, Matrix, MipmapMode, Paint, PictureRecorder, Point as SkPoint, RRect, Rect, SamplingOptions, Size, Vector};
 
 use crate::renderers::PictureToRasterize;
 use crate::textures::disassemble_backend_texture;
@@ -363,6 +360,11 @@ impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
                 )
                 .unwrap();
 
+                let backend_render_target = gpu::surfaces::get_backend_render_target(
+                    &mut render_target,
+                    BackendHandleAccess::FlushRead,
+                ).expect("Host: no backend render target");
+
                 let backend_texture = gpu::surfaces::get_backend_texture(
                     &mut render_target,
                     BackendHandleAccess::FlushRead,
@@ -371,28 +373,48 @@ impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
                 let texture_description = disassemble_backend_texture(
                     self.platform.as_ref(),
                     &mut context,
+                    &render_target,
+                    &backend_render_target,
                     &backend_texture,
                     scale,
                 )
                 .unwrap();
 
+                // Host is about to let plugin render into a host-owned Skia render target
+                // If the FBO came from a host Skia Surface, and the plugin will draw into it
+                // via raw GL / plugin Skia, then the host should first flush its pending writes.
+                // This ensures host Skia work is actually submitted before plugin starts using the same backing store.
                 context.flush_and_submit();
 
                 (texture.rendering)(texture_description, texture.payload);
 
+                // Host tells its own Skia surface that contents changed externally.
+                // This is needed if the plugin rendered into a backing store that the host also represents as a Skia Surface.
+                // This is the “plugin modified my Skia-owned render target behind Skia’s back” step.
+                render_target.notify_content_will_change(ContentChangeMode::Retain);
+                // Before host Skia draws again, reset host DirectContext
+                // because the plugin changed GL state and submitted GL work.
+                context.reset(None);
+
+                let image_info = render_target.image_info();
                 if let Some(image) = Image::from_texture(
                     &mut context,
                     &backend_texture,
                     SurfaceOrigin::TopLeft,
-                    ColorType::RGBA8888,
-                    AlphaType::Premul,
+                    image_info.color_type(),
+                    image_info.alpha_type(),
                     None, // no color space
                 ) {
                     // Draw the image into the original canvas
                     let dst =
                         Rect::from_xywh(0.0, 0.0, layer.width() as f32, layer.height() as f32);
+
+                    let mut paint = Paint::default();
+                    paint.set_anti_alias(false);
+                    let sampling = SamplingOptions::new(FilterMode::Linear, MipmapMode::Linear);
+
                     self.canvas
-                        .draw_image_rect(&image, None, dst, &Paint::default());
+                        .draw_image_rect_with_sampling_options(&image, None, dst, sampling, &paint);
                 }
             }
             Texture::External(_) => {}

@@ -1,15 +1,15 @@
-use std::ffi::c_void;
-use std::fmt::{Debug, Formatter};
-use std::mem::transmute;
-
 use anyhow::{anyhow, bail, Result};
 use mozangle::egl::ffi::*;
-use mozangle::egl::get_proc_address;
+use mozangle::egl::{ffi, get_proc_address};
 use skia_safe::gpu::gl::{Format, FramebufferInfo, Interface};
 use skia_safe::gpu::{
     BackendRenderTarget, ContextOptions, DirectContext, RecordingContext, SurfaceOrigin,
 };
 use skia_safe::{gpu, ColorType, ISize, Surface};
+use std::ffi::{c_void, CString};
+use std::fmt::{Debug, Formatter};
+use std::mem::transmute;
+use std::os::raw;
 use windows::Win32::Foundation::HWND;
 use windows::Win32::Graphics::Gdi::GetDC;
 
@@ -24,27 +24,48 @@ pub struct AngleContext {
     egl_context: Option<AngleWindowContext>,
     width: i32,
     height: i32,
+    recreate_context_on_resize: bool,
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct AnglePlatform {
+pub struct OpenGLPlatform {
     pub display: *mut c_void,
     pub context: *mut c_void,
+    pub surface: *mut c_void,
+    pub get_proc_address: unsafe extern "C" fn(name: *const raw::c_char) -> *const c_void,
+    pub get_current_context: unsafe extern "C" fn() -> *const c_void,
+}
+
+pub unsafe extern "C" fn get_proc_address_ffi(name: *const raw::c_char) -> *const c_void {
+    GetProcAddress(name) as *const _ as _
+}
+
+pub unsafe extern "C" fn get_current_context_ffi() -> *const c_void {
+    GetCurrentContext()
 }
 
 impl AngleContext {
-    pub fn platform(&self) -> Option<AnglePlatform> {
-        self.egl_context.as_ref().map(|window_context| AnglePlatform {
-            display: self.egl_display as *mut c_void,
-            context: window_context.egl_context as *mut c_void,
-        })
+    pub fn platform(&self) -> Option<OpenGLPlatform> {
+        self.egl_context
+            .as_ref()
+            .map(|window_context| OpenGLPlatform {
+                display: self.egl_display as *mut c_void,
+                context: window_context.egl_context as *mut c_void,
+                surface: window_context.egl_surface as *mut c_void,
+                get_proc_address: get_proc_address_ffi,
+                get_current_context: get_current_context_ffi,
+            })
     }
 
-    pub fn new(window: *mut c_void, width: i32, height: i32) -> Result<Self> {
+    pub fn new(
+        window: *mut c_void,
+        width: i32,
+        height: i32,
+        recreate_context_on_resize: bool,
+    ) -> Result<Self> {
         let window: HWND = unsafe { transmute(window) };
 
-        let hdc = unsafe { GetDC(Some(window)) };
-        let (egl_display, _major_version, _minor_version) = get_display(hdc)?;
+        let (egl_display, _major_version, _minor_version) = get_display(window)?;
 
         let mut angle_context = Self {
             window,
@@ -52,6 +73,7 @@ impl AngleContext {
             egl_context: None,
             width,
             height,
+            recreate_context_on_resize,
         };
 
         angle_context.initialize_context()?;
@@ -62,7 +84,18 @@ impl AngleContext {
     }
 
     pub fn with_surface(&mut self, callback: impl FnOnce(&mut Surface)) -> Result<()> {
-        self.make_current()?;
+        match self.make_current() {
+            Ok(_) => {}
+            Err(error) => {
+                warn!("Failed to make context current: {:?}", error);
+                let _ = self.destroy_context();
+
+                let (egl_display, _major_version, _minor_version) = get_display(self.window)?;
+                self.egl_display = egl_display;
+                self.initialize_context()?;
+                self.make_current()?;
+            }
+        }
 
         if let Some(surface) = self.get_surface() {
             trace!(
@@ -74,7 +107,6 @@ impl AngleContext {
             self.flush_and_submit();
         }
         self.swap_buffers()?;
-        self.make_not_current()?;
 
         Ok(())
     }
@@ -87,8 +119,15 @@ impl AngleContext {
         self.width = size.width;
         self.height = size.height;
 
-        self.destroy_context()?;
-        self.initialize_context()?;
+        if self.recreate_context_on_resize {
+            self.destroy_context()?;
+            self.initialize_context()?;
+        }
+
+        if let Some(ref mut egl_context) = self.egl_context {
+            egl_context.try_create_surface(self.width, self.height)?;
+        }
+
         Ok(())
     }
 
@@ -111,11 +150,17 @@ impl AngleContext {
         if self.egl_context.is_some() {
             bail!("Context already initialized")
         }
+
+        let surface_size = if self.recreate_context_on_resize {
+            Some((self.width, self.height))
+        } else {
+            None
+        };
+
         self.egl_context = Some(AngleWindowContext::try_create(
             self.egl_display,
             self.window,
-            self.width,
-            self.height,
+            surface_size,
         )?);
         Ok(())
     }
@@ -158,9 +203,8 @@ impl AngleContext {
 impl Drop for AngleContext {
     fn drop(&mut self) {
         self.destroy_context()
-            .unwrap_or_else(|error| error!("Failed to destroy context: {}", error));
-        terminate_display(self.egl_display)
-            .unwrap_or_else(|error| error!("Failed to terminate display: {}", error));
+            .unwrap_or_else(|error| error!("{:?}", error));
+        terminate_display(self.egl_display).unwrap_or_else(|error| error!("{:?}", error));
         self.egl_display = NO_DISPLAY;
     }
 }
@@ -179,16 +223,16 @@ impl AngleWindowContext {
     fn try_create(
         egl_display: types::EGLDisplay,
         window: HWND,
-        width: i32,
-        height: i32,
+        size: Option<(i32, i32)>,
     ) -> Result<Self> {
         let egl_config = choose_config(egl_display)?;
         let egl_context = create_context(egl_display, egl_config)?;
-        let egl_surface = create_window_surface(egl_display, egl_config, window, width, height)?;
+
+        let egl_surface = create_window_surface(egl_display, egl_config, window, size)?;
         make_current(egl_display, egl_surface, egl_surface, egl_context)?;
         let interface = assemble_interface()?;
         let context_options = ContextOptions::default();
-        let direct_context = DirectContext::new_gl(interface.clone(), &context_options)
+        let direct_context = gpu::direct_contexts::make_gl(interface.clone(), &context_options)
             .ok_or_else(|| anyhow!("Failed to create direct context"))?;
 
         Ok(Self {
@@ -253,7 +297,7 @@ fn assemble_interface() -> Result<Interface> {
 }
 
 fn create_direct_context(interface: Interface) -> Result<DirectContext> {
-    DirectContext::new_gl(interface.clone(), None)
+    gpu::direct_contexts::make_gl(interface.clone(), None)
         .ok_or_else(|| anyhow!("Failed to create direct context"))
 }
 
@@ -265,9 +309,9 @@ fn create_skia_surface(
     let framebuffer = get_framebuffer_binding();
 
     let framebuffer_info = FramebufferInfo {
-        fboid: framebuffer.try_into().unwrap(),
+        fboid: framebuffer.try_into()?,
         format: Format::RGBA8.into(),
-        protected: skia_safe::gpu::Protected::No,
+        protected: gpu::Protected::No,
     };
 
     let backend_render_target = gpu::backend_render_targets::make_gl(
