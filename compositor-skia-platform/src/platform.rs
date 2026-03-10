@@ -18,6 +18,7 @@ impl Platform {
         }
     }
 
+    #[cfg(target_os = "windows")]
     pub fn try_as_opengl_platform(&self) -> Option<&crate::OpenGLPlatform> {
         match self {
             #[cfg(target_os = "windows")]

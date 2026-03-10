@@ -28,6 +28,7 @@ pub fn disassemble_backend_texture(
         BackendAPI::Metal => metal::disassemble_metal_backend_texture(
             platform?.try_as_metal_platform()?,
             context,
+            render_target,
             backend_texture,
             scale,
         )
@@ -41,18 +42,19 @@ pub fn disassemble_backend_texture(
 /// If the receiver needs to keep it, they must retain it on the ObjC side.
 #[cfg(target_os = "macos")]
 mod metal {
-    use compositor_skia_platform::MetalPlatform;
-    use compositor_texture::MetalTextureDesc;
+    use compositor_skia_platform::{MetalPlatform};
+    use compositor_texture::{encode_skia_color_type, encode_skia_protected, MetalTextureDesc, Protected};
     use foreign_types_shared::ForeignTypeRef;
     use skia_safe::gpu::{
         backend_formats, backend_textures, mtl, BackendTexture, RecordingContext,
     };
-    use skia_safe::Size;
+    use skia_safe::{Size, Surface};
     use std::ffi::c_void;
 
     pub(crate) fn disassemble_metal_backend_texture(
         platform: &MetalPlatform,
         _ctx: &mut RecordingContext, // optional but handy for flushing
+        render_target: &Surface,
         backend_tex: &BackendTexture,
         scale: Size,
     ) -> Option<MetalTextureDesc> {
@@ -66,6 +68,8 @@ mod metal {
         let mtl_fmt: mtl::PixelFormat =
             backend_formats::as_mtl_format(&backend_tex.backend_format())?;
 
+        let image_info = render_target.image_info();
+        
         Some(MetalTextureDesc {
             device: platform.device.as_ptr() as _,
             queue: platform.queue.as_ptr() as _,
@@ -74,8 +78,10 @@ mod metal {
             height: backend_tex.height(),
             scale_width: scale.width,
             scale_height: scale.height,
+            color_type: encode_skia_color_type!(image_info.color_type()),
             mipmapped: backend_tex.has_mipmaps(),
             pixel_format: mtl_fmt,
+            protected: Protected::No,
         })
     }
 }
