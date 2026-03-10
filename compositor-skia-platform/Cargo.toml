@@ -14,14 +14,14 @@ num_enum = "0.7"
 thiserror = "2.0"
 
 [target.'cfg(target_os="macos")'.dependencies]
-skia-safe = { version = ">=0.90", default-features = false, features = ["gl", "metal"] }
+skia-safe = { version = ">=0.90", default-features = false, features = ["metal"] }
 metal = { version = "0.32" }
 cocoa = { version = "0.26" }
 core-graphics-types = { version = "0.2" }
 foreign-types-shared = { version = "0.3" }
 
 [target.'cfg(target_os="ios")'.dependencies]
-skia-safe = { version = ">=0.90", default-features = false, features = ["gl", "metal"] }
+skia-safe = { version = ">=0.90", default-features = false, features = ["metal"] }
 uikit-sys = { git = "https://github.com/syrel/uikit-sys" }
 objc = "0.2"
 
