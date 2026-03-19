@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use array_box::ArrayBox;
-use value_box::{value_box, ReturnBoxerResult, ValueBox, ValueBoxPointer};
+use value_box::{BorrowedPtr, OwnedPtr, ReturnBoxerResult};
 
 use compositor::{
     Extent, Layer, Picture, PictureLayer, Point, TiledFigureId, TiledLayer, TiledLayerFigure,
@@ -9,8 +9,8 @@ use compositor::{
 };
 
 #[unsafe(no_mangle)]
-pub extern "C" fn compositor_tiled_layer_default() -> *mut ValueBox<Arc<dyn Layer>> {
-    value_box!(Arc::new(TiledLayer::default()) as Arc<dyn Layer>).into_raw()
+pub extern "C" fn compositor_tiled_layer_default() -> OwnedPtr<Arc<dyn Layer>> {
+    OwnedPtr::new(Arc::new(TiledLayer::default()) as Arc<dyn Layer>)
 }
 
 #[unsafe(no_mangle)]
@@ -21,18 +21,17 @@ pub extern "C" fn compositor_tiled_layer_new(
     height: f32,
     tile_width: f32,
     tile_height: f32,
-) -> *mut ValueBox<Arc<dyn Layer>> {
-    value_box!(Arc::new(TiledLayer::new(
+) -> OwnedPtr<Arc<dyn Layer>> {
+    OwnedPtr::new(Arc::new(TiledLayer::new(
         Point::new(camera_x, camera_y),
         Extent::new(width, height),
         Extent::new(tile_width, tile_height)
     )) as Arc<dyn Layer>)
-    .into_raw()
 }
 
 #[unsafe(no_mangle)]
 pub extern "C" fn compositor_tiled_layer_add_figure(
-    layer: *mut ValueBox<Arc<dyn Layer>>,
+    layer: BorrowedPtr<Arc<dyn Layer>>,
     id: TiledFigureId,
     offset_x: f32,
     offset_y: f32,
@@ -57,9 +56,9 @@ pub extern "C" fn compositor_tiled_layer_add_figure(
 
 #[unsafe(no_mangle)]
 pub extern "C" fn compositor_tiled_layer_figure_set_picture(
-    tiled_layer: *mut ValueBox<Arc<dyn Layer>>,
+    tiled_layer: BorrowedPtr<Arc<dyn Layer>>,
     id: TiledFigureId,
-    picture: *mut ValueBox<Arc<dyn Picture>>,
+    picture: BorrowedPtr<Arc<dyn Picture>>,
 ) {
     tiled_layer
         .with_ref_ok(|tiled_layer| {
@@ -81,9 +80,9 @@ pub extern "C" fn compositor_tiled_layer_figure_set_picture(
 
 #[unsafe(no_mangle)]
 pub extern "C" fn compositor_tiled_layer_figure_set_picture_layer(
-    tiled_layer: *mut ValueBox<Arc<dyn Layer>>,
+    tiled_layer: BorrowedPtr<Arc<dyn Layer>>,
     id: TiledFigureId,
-    picture_layer: *mut ValueBox<Arc<dyn Layer>>,
+    picture_layer: BorrowedPtr<Arc<dyn Layer>>,
 ) {
     tiled_layer
         .with_ref_ok(|tiled_layer| {
@@ -108,27 +107,30 @@ pub extern "C" fn compositor_tiled_layer_figure_set_picture_layer(
 
 #[unsafe(no_mangle)]
 pub extern "C" fn compositor_tiled_layer_set_camera_position(
-    tiled_layer: *mut ValueBox<Arc<dyn Layer>>,
+    mut tiled_layer: BorrowedPtr<Arc<dyn Layer>>,
     camera_x: f32,
     camera_y: f32,
 ) {
     tiled_layer
-        .replace_value(|tiled_layer| {
-            let tiled_layer = tiled_layer
-                .any()
-                .downcast_ref::<TiledLayer>()
-                .expect("Is not a tiled layer!");
+        .with_mut_ok(|layer| {
+            let updated = {
+                let tiled_layer = layer
+                    .any()
+                    .downcast_ref::<TiledLayer>()
+                    .expect("Is not a tiled layer!");
 
-            tiled_layer
-                .with_camera_position(Point::new(camera_x, camera_y))
-                .clone_arc()
+                tiled_layer
+                    .with_camera_position(Point::new(camera_x, camera_y))
+                    .clone_arc()
+            };
+            *layer = updated;
         })
         .log();
 }
 
 #[unsafe(no_mangle)]
 pub extern "C" fn compositor_tiled_layer_scale_value(
-    tiled_layer: *mut ValueBox<Arc<dyn Layer>>,
+    tiled_layer: BorrowedPtr<Arc<dyn Layer>>,
 ) -> f32 {
     tiled_layer
         .with_ref_ok(|tiled_layer| {
@@ -144,46 +146,52 @@ pub extern "C" fn compositor_tiled_layer_scale_value(
 
 #[unsafe(no_mangle)]
 pub extern "C" fn compositor_tiled_layer_set_scale_in_factor(
-    tiled_layer: *mut ValueBox<Arc<dyn Layer>>,
+    mut tiled_layer: BorrowedPtr<Arc<dyn Layer>>,
     scale: f32,
 ) {
     tiled_layer
-        .replace_value(|tiled_layer| {
-            let tiled_layer = tiled_layer
-                .any()
-                .downcast_ref::<TiledLayer>()
-                .expect("Is not a tiled layer!");
+        .with_mut_ok(|layer| {
+            let updated = {
+                let tiled_layer = layer
+                    .any()
+                    .downcast_ref::<TiledLayer>()
+                    .expect("Is not a tiled layer!");
 
-            tiled_layer
-                .with_scale_factor(TiledLayerScaleFactor::scale_in(scale))
-                .clone_arc()
+                tiled_layer
+                    .with_scale_factor(TiledLayerScaleFactor::scale_in(scale))
+                    .clone_arc()
+            };
+            *layer = updated;
         })
         .log();
 }
 
 #[unsafe(no_mangle)]
 pub extern "C" fn compositor_tiled_layer_set_scale_out_factor(
-    tiled_layer: *mut ValueBox<Arc<dyn Layer>>,
+    mut tiled_layer: BorrowedPtr<Arc<dyn Layer>>,
     scale: f32,
 ) {
     tiled_layer
-        .replace_value(|tiled_layer| {
-            let tiled_layer = tiled_layer
-                .any()
-                .downcast_ref::<TiledLayer>()
-                .expect("Is not a tiled layer!");
+        .with_mut_ok(|layer| {
+            let updated = {
+                let tiled_layer = layer
+                    .any()
+                    .downcast_ref::<TiledLayer>()
+                    .expect("Is not a tiled layer!");
 
-            tiled_layer
-                .with_scale_factor(TiledLayerScaleFactor::scale_out(scale))
-                .clone_arc()
+                tiled_layer
+                    .with_scale_factor(TiledLayerScaleFactor::scale_out(scale))
+                    .clone_arc()
+            };
+            *layer = updated;
         })
         .log();
 }
 
 #[unsafe(no_mangle)]
 pub extern "C" fn compositor_tiled_layer_visible_figures(
-    tiled_layer: *mut ValueBox<Arc<dyn Layer>>,
-    ids: *mut ValueBox<ArrayBox<u32>>,
+    tiled_layer: BorrowedPtr<Arc<dyn Layer>>,
+    mut ids: BorrowedPtr<ArrayBox<u32>>,
 ) {
     tiled_layer
         .with_ref_ok(|tiled_layer| {
@@ -207,8 +215,8 @@ pub extern "C" fn compositor_tiled_layer_visible_figures(
 
 #[unsafe(no_mangle)]
 pub extern "C" fn compositor_tiled_layer_visible_figures_without_pictures(
-    tiled_layer: *mut ValueBox<Arc<dyn Layer>>,
-    ids: *mut ValueBox<ArrayBox<u32>>,
+    tiled_layer: BorrowedPtr<Arc<dyn Layer>>,
+    mut ids: BorrowedPtr<ArrayBox<u32>>,
 ) {
     tiled_layer
         .with_ref_ok(|tiled_layer| {
@@ -226,8 +234,8 @@ pub extern "C" fn compositor_tiled_layer_visible_figures_without_pictures(
 
 #[unsafe(no_mangle)]
 pub extern "C" fn compositor_tiled_layer_visible_figures_within_tiles_without_pictures(
-    tiled_layer: *mut ValueBox<Arc<dyn Layer>>,
-    ids: *mut ValueBox<ArrayBox<u32>>,
+    tiled_layer: BorrowedPtr<Arc<dyn Layer>>,
+    mut ids: BorrowedPtr<ArrayBox<u32>>,
 ) {
     tiled_layer
         .with_ref_ok(|tiled_layer| {

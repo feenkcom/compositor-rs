@@ -1,10 +1,10 @@
-use value_box::{ValueBox, ValueBoxIntoRaw, ValueBoxPointer};
+use value_box::{OwnedPtr, ReturnBoxerResult};
 
 use compositor::{Circle, Geometry, Path, Point, Radius, Rectangle, RoundedRectangle};
 
 #[unsafe(no_mangle)]
-pub extern "C" fn compositor_geometry_none() -> *mut ValueBox<Geometry> {
-    ValueBox::new(Geometry::None).into_raw()
+pub extern "C" fn compositor_geometry_none() -> OwnedPtr<Geometry> {
+    OwnedPtr::new(Geometry::None)
 }
 
 #[unsafe(no_mangle)]
@@ -13,11 +13,10 @@ pub extern "C" fn compositor_geometry_new_rectangle(
     top: f32,
     width: f32,
     height: f32,
-) -> *mut ValueBox<Geometry> {
-    ValueBox::new(Geometry::Rectangle(Rectangle::new(
+) -> OwnedPtr<Geometry> {
+    OwnedPtr::new(Geometry::Rectangle(Rectangle::new(
         left, top, width, height,
     )))
-    .into_raw()
 }
 
 #[unsafe(no_mangle)]
@@ -34,15 +33,14 @@ pub extern "C" fn compositor_geometry_new_rounded_rectangle(
     r_right_y: f32,
     r_bottom_x: f32,
     r_bottom_y: f32,
-) -> *mut ValueBox<Geometry> {
-    ValueBox::new(Geometry::RoundedRectangle(RoundedRectangle::new(
+) -> OwnedPtr<Geometry> {
+    OwnedPtr::new(Geometry::RoundedRectangle(RoundedRectangle::new(
         Rectangle::new(left, top, width, height),
         Radius::new(r_left_x, r_left_y),
         Radius::new(r_top_x, r_top_y),
         Radius::new(r_right_x, r_right_y),
         Radius::new(r_bottom_x, r_bottom_y),
     )))
-    .into_raw()
 }
 
 #[unsafe(no_mangle)]
@@ -50,27 +48,25 @@ pub extern "C" fn compositor_geometry_new_circle(
     center_x: f32,
     center_y: f32,
     radius: f32,
-) -> *mut ValueBox<Geometry> {
-    ValueBox::new(Geometry::Circle(Circle::new(
+) -> OwnedPtr<Geometry> {
+    OwnedPtr::new(Geometry::Circle(Circle::new(
         Point::new(center_x, center_y),
         radius,
     )))
-    .into_raw()
 }
 
 /// Creates a new geometry from a given path consuming that path
 #[unsafe(no_mangle)]
 pub extern "C" fn compositor_geometry_new_path(
-    path: *mut ValueBox<Path>,
-) -> *mut ValueBox<Geometry> {
-    path.take_value()
-        .map(|path| ValueBox::new(Geometry::Path(path)))
-        .into_raw()
+    path: OwnedPtr<Path>,
+) -> OwnedPtr<Geometry> {
+    path.with_value_ok(|path| OwnedPtr::new(Geometry::Path(path)))
+        .or_log(OwnedPtr::null())
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn compositor_geometry_drop(path: *mut ValueBox<Geometry>) {
-    path.release();
+pub extern "C" fn compositor_geometry_drop(path: OwnedPtr<Geometry>) {
+    drop(path);
 }
 
 // #[unsafe(no_mangle)]

@@ -1,10 +1,10 @@
 [package]
 name = "compositor-skia-ffi"
-version = "2.2.0"
-edition = "2021"
+version = "2.4.0"
+edition.workspace = true
 
 [dependencies]
-compositor = { path = "../compositor" }
-compositor-skia = { path = "../compositor-skia" }
-value-box = { version = "2" }
-reference-box = "1.1"
+compositor.workspace = true
+compositor-skia.workspace = true
+value-box.workspace = true
+reference-box.workspace = true

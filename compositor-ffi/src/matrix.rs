@@ -1,23 +1,23 @@
 use array_box::ArrayBox;
-use value_box::{ValueBox, ValueBoxIntoRaw, ValueBoxPointer};
+use value_box::{BorrowedPtr, OwnedPtr, ReturnBoxerResult};
 
 use compositor::{Matrix, Scalar};
 
 #[unsafe(no_mangle)]
 pub extern "C" fn compositor_matrix_new(
-    values: *mut ValueBox<ArrayBox<f32>>,
-) -> *mut ValueBox<Matrix> {
+    values: BorrowedPtr<ArrayBox<f32>>,
+) -> OwnedPtr<Matrix> {
     values
         .with_ref_ok(|values| {
-            let buffer: &mut [f32; 9] = values.to_slice().try_into().unwrap();
+            let buffer: &[f32; 9] = values.to_slice().try_into().unwrap();
             let buffer = &unsafe { *(buffer as *const [f32; 9] as *const [Scalar; 9]) };
 
-            ValueBox::new(Matrix::from_9(buffer.clone()))
+            OwnedPtr::new(Matrix::from_9(*buffer))
         })
-        .into_raw()
+        .or_log(OwnedPtr::null())
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn compositor_matrix_drop(matrix: *mut ValueBox<Matrix>) {
-    matrix.release();
+pub extern "C" fn compositor_matrix_drop(matrix: OwnedPtr<Matrix>) {
+    drop(matrix);
 }

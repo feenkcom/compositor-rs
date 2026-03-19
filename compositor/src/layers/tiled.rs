@@ -549,7 +549,7 @@ impl TiledLayerFigure {
         self.0.picture.read().is_some()
     }
 
-    pub fn picture(&self) -> Option<impl Layer> {
+    pub fn picture(&self) -> Option<OffsetLayer> {
         self.0
             .picture
             .read()

@@ -1,19 +1,19 @@
 [package]
 name = "compositor-ffi"
-version = "2.3.0"
-edition = "2021"
+version = "2.4.0"
+edition.workspace = true
 
 [dependencies]
-compositor = { path = "../compositor" }
-compositor-texture = { path = "../compositor-texture" }
-reference-box = "1.1"
-string-box = "1.1"
-array-box = "1.0"
-value-box = { version = "2" }
-phlow = { version = "1", optional = true }
-phlow-extensions = { version = "1", optional = true }
-cfg-if = "1.0"
+compositor.workspace = true
+compositor-texture.workspace = true
+reference-box.workspace = true
+string-box.workspace = true
+array-box.workspace = true
+value-box.workspace = true
+phlow = { workspace = true, optional = true }
+phlow-extensions = { workspace = true, optional = true }
+cfg-if.workspace = true
 
 [features]
 default = [ ]
-phlow = [ "dep:phlow", "dep:phlow-extensions", "compositor/phlow", "value-box/phlow" ]
+phlow = [ "dep:phlow", "dep:phlow-extensions", "compositor/phlow" ]

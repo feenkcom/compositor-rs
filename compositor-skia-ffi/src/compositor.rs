@@ -1,15 +1,15 @@
 use reference_box::{ReferenceBox, ReferenceBoxPointer};
 use std::sync::Arc;
-use value_box::{ReturnBoxerResult, ValueBox, ValueBoxPointer};
+use value_box::{BorrowedPtr, OwnedPtr, ReturnBoxerResult};
 
 use compositor::{Compositor, Layer};
 use compositor_skia::{Cache, Canvas, SkiaCachelessCompositor, SkiaCompositor};
 
 #[unsafe(no_mangle)]
 pub fn skia_compositor_compose(
-    layer: *mut ValueBox<Arc<dyn Layer>>,
+    layer: BorrowedPtr<Arc<dyn Layer>>,
     canvas: *mut ReferenceBox<Canvas>,
-    cache: *mut ValueBox<Cache>,
+    mut cache: BorrowedPtr<Cache>,
 ) {
     layer
         .with_ref(|layer| {
@@ -24,7 +24,7 @@ pub fn skia_compositor_compose(
 
 #[unsafe(no_mangle)]
 pub fn skia_cacheless_compositor_compose(
-    layer: *mut ValueBox<Arc<dyn Layer>>,
+    layer: BorrowedPtr<Arc<dyn Layer>>,
     canvas: *mut ReferenceBox<Canvas>,
 ) {
     layer
@@ -37,11 +37,11 @@ pub fn skia_cacheless_compositor_compose(
 }
 
 #[unsafe(no_mangle)]
-pub fn skia_compositor_cache_new() -> *mut ValueBox<Cache> {
-    ValueBox::new(Cache::new()).into_raw()
+pub fn skia_compositor_cache_new() -> OwnedPtr<Cache> {
+    OwnedPtr::new(Cache::new())
 }
 
 #[unsafe(no_mangle)]
-pub fn skia_compositor_cache_drop(cache: *mut ValueBox<Cache>) {
-    cache.release();
+pub fn skia_compositor_cache_drop(cache: OwnedPtr<Cache>) {
+    drop(cache);
 }

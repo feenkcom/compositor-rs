@@ -1,7 +1,7 @@
 use compositor::Path;
-use value_box::{ValueBox, ValueBoxPointer};
+use value_box::OwnedPtr;
 
 #[unsafe(no_mangle)]
-pub extern "C" fn compositor_path_drop(path: *mut ValueBox<Path>) {
-    path.release();
+pub extern "C" fn compositor_path_drop(path: OwnedPtr<Path>) {
+    drop(path);
 }

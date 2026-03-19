@@ -1,41 +1,40 @@
 use compositor::{Layer, OffsetLayer, Point};
 use std::sync::Arc;
-use value_box::{ReturnBoxerResult, ValueBox, ValueBoxIntoRaw, ValueBoxPointer};
+use value_box::{BorrowedPtr, OwnedPtr, ReturnBoxerResult};
 
 #[unsafe(no_mangle)]
-pub extern "C" fn compositor_offset_layer_new() -> *mut ValueBox<Arc<dyn Layer>> {
-    ValueBox::new(Arc::new(OffsetLayer::new()) as Arc<dyn Layer>).into_raw()
+pub extern "C" fn compositor_offset_layer_new() -> OwnedPtr<Arc<dyn Layer>> {
+    OwnedPtr::new(Arc::new(OffsetLayer::new()) as Arc<dyn Layer>)
 }
 
 #[unsafe(no_mangle)]
 pub extern "C" fn compositor_offset_layer_new_point(
     x: f32,
     y: f32,
-) -> *mut ValueBox<Arc<dyn Layer>> {
-    ValueBox::new(Arc::new(OffsetLayer::new_offset(Point::new_f32(x, y))) as Arc<dyn Layer>)
-        .into_raw()
+) -> OwnedPtr<Arc<dyn Layer>> {
+    OwnedPtr::new(Arc::new(OffsetLayer::new_offset(Point::new_f32(x, y))) as Arc<dyn Layer>)
 }
 
 #[unsafe(no_mangle)]
 pub extern "C" fn compositor_offset_layer_with_point(
-    layer: *mut ValueBox<Arc<dyn Layer>>,
+    layer: BorrowedPtr<Arc<dyn Layer>>,
     x: f32,
     y: f32,
-) -> *mut ValueBox<Arc<dyn Layer>> {
+) -> OwnedPtr<Arc<dyn Layer>> {
     layer
         .with_ref_ok(|layer| {
             let offset_layer = layer
                 .any()
                 .downcast_ref::<OffsetLayer>()
                 .expect("Is not an offset layer!");
-            ValueBox::new(Arc::new(offset_layer.with_offset(Point::new_f32(x, y)))
+            OwnedPtr::new(Arc::new(offset_layer.with_offset(Point::new_f32(x, y)))
                 as Arc<dyn Layer>)
         })
-        .into_raw()
+        .or_log(OwnedPtr::null())
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn compositor_offset_layer_get_x(layer: *mut ValueBox<Arc<dyn Layer>>) -> f32 {
+pub extern "C" fn compositor_offset_layer_get_x(layer: BorrowedPtr<Arc<dyn Layer>>) -> f32 {
     layer
         .with_ref_ok(|layer| {
             let offset_layer = layer
@@ -49,7 +48,7 @@ pub extern "C" fn compositor_offset_layer_get_x(layer: *mut ValueBox<Arc<dyn Lay
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn compositor_offset_layer_get_y(layer: *mut ValueBox<Arc<dyn Layer>>) -> f32 {
+pub extern "C" fn compositor_offset_layer_get_y(layer: BorrowedPtr<Arc<dyn Layer>>) -> f32 {
     layer
         .with_ref_ok(|layer| {
             let offset_layer = layer

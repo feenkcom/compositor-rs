@@ -1,15 +1,14 @@
 use std::sync::Arc;
 
-use value_box::{ValueBox, ValueBoxIntoRaw, ValueBoxPointer};
+use value_box::{OwnedPtr, ReturnBoxerResult};
 
 use compositor::{Layer, Shadow, ShadowLayer};
 
 #[unsafe(no_mangle)]
 pub extern "C" fn compositor_shadow_layer_new(
-    shadow: *mut ValueBox<Shadow>,
-) -> *mut ValueBox<Arc<dyn Layer>> {
+    shadow: OwnedPtr<Shadow>,
+) -> OwnedPtr<Arc<dyn Layer>> {
     shadow
-        .take_value()
-        .map(|shadow| ValueBox::new(Arc::new(ShadowLayer::new(shadow)) as Arc<dyn Layer>))
-        .into_raw()
+        .with_value_ok(|shadow| OwnedPtr::new(Arc::new(ShadowLayer::new(shadow)) as Arc<dyn Layer>))
+        .or_log(OwnedPtr::null())
 }

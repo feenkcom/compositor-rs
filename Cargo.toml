@@ -11,6 +11,64 @@ members = [
 
 exclude = [ "target" ]
 
+[workspace.package]
+edition = "2024"
+
+[workspace.dependencies]
+# Compositor
+compositor = { path = "compositor" }
+compositor-ffi = { path = "compositor-ffi" }
+compositor-skia = { path = "compositor-skia" }
+compositor-skia-ffi = { path = "compositor-skia-ffi" }
+compositor-skia-platform = { path = "compositor-skia-platform" }
+compositor-texture = { path = "compositor-texture" }
+
+# FFI helpers
+value-box = "4.1"
+string-box = "4.1"
+reference-box = "1.1"
+
+# Phlow
+phlow = "1"
+phlow-extensions = "1"
+phlow-server = "1"
+
+# Third party
+anyhow = "1.0"
+array-box = "4.1.0"
+cfg-if = "1.0"
+cocoa = "0.26"
+core-graphics-types = "0.2"
+env_logger = { version = "0.11", features = ["color"] }
+euclid = "0.22"
+foreign-types-shared = "0.3"
+fps_counter = "3.0"
+fraction = "0.15"
+khronos-egl = { version = "6.0", features = ["dynamic"] }
+lazy_static = "1.4"
+libloading = "0.8"
+log = "0.4"
+metal = "0.32"
+metal-rs = { package = "metal", version = "0.32" }
+mozangle = { git = "https://github.com/syrel/mozangle", rev = "8ad3227cbfe59b9ddbaa95379b5d45804427630d", features = ["egl"] }
+num_enum = "0.7"
+objc = "0.2"
+ordered-float = "5.0"
+parking_lot = "0.12"
+rand = "0.8"
+raw-window-handle-5 = { package = "raw-window-handle", version = "0.5" }
+raw-window-handle-6 = { package = "raw-window-handle", version = "0.6" }
+rstar = "0.12"
+thiserror = "2.0"
+uikit-sys = { git = "https://github.com/syrel/uikit-sys" }
+
+wayland-sys = { version = "0.31", default-features = false, features = ["egl", "client", "dlopen"] }
+windows = "0.62"
+winit = "0.27.5"
+winit-28 = { package = "winit", version = "0.28" }
+winit-29 = { package = "winit", version = "0.29" }
+x11 = { version = "2.21", features = ["xlib", "glx"] }
+
 [profile.dev]
 opt-level = 0
 debug = true

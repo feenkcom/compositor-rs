@@ -1,59 +1,57 @@
 use compositor::{Geometry, Layer, LeftoverStateLayer, Matrix, Point, StateCommand};
 use std::sync::Arc;
-use value_box::{ReturnBoxerResult, ValueBox, ValueBoxIntoRaw, ValueBoxPointer};
+use value_box::{BorrowedPtr, OwnedPtr, ReturnBoxerResult};
 
 #[unsafe(no_mangle)]
 pub extern "C" fn compositor_leftover_clip_command(
-    geometry: *mut ValueBox<Geometry>,
+    geometry: OwnedPtr<Geometry>,
     offset_x: f32,
     offset_y: f32,
-) -> *mut ValueBox<StateCommand> {
+) -> OwnedPtr<StateCommand> {
     geometry
-        .take_value()
-        .map(|geometry| {
-            ValueBox::new(StateCommand::clip(
+        .with_value_ok(|geometry| {
+            OwnedPtr::new(StateCommand::clip(
                 geometry,
                 Point::new_f32(offset_x, offset_y),
             ))
         })
-        .into_raw()
+        .or_log(OwnedPtr::null())
 }
 
 #[unsafe(no_mangle)]
 pub extern "C" fn compositor_leftover_transform_command(
-    matrix: *mut ValueBox<Matrix>,
+    matrix: OwnedPtr<Matrix>,
     offset_x: f32,
     offset_y: f32,
-) -> *mut ValueBox<StateCommand> {
+) -> OwnedPtr<StateCommand> {
     matrix
-        .take_value()
-        .map(|geometry| {
-            ValueBox::new(StateCommand::transform(
-                geometry,
+        .with_value_ok(|matrix| {
+            OwnedPtr::new(StateCommand::transform(
+                matrix,
                 Point::new_f32(offset_x, offset_y),
             ))
         })
-        .into_raw()
+        .or_log(OwnedPtr::null())
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn compositor_leftover_command_drop(command: *mut ValueBox<StateCommand>) {
-    command.release();
+pub extern "C" fn compositor_leftover_command_drop(command: OwnedPtr<StateCommand>) {
+    drop(command);
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn compositor_leftover_commands_new() -> *mut ValueBox<Vec<StateCommand>> {
-    ValueBox::new(vec![]).into_raw()
+pub extern "C" fn compositor_leftover_commands_new() -> OwnedPtr<Vec<StateCommand>> {
+    OwnedPtr::new(vec![])
 }
 
 #[unsafe(no_mangle)]
 pub extern "C" fn compositor_leftover_commands_add(
-    commands: *mut ValueBox<Vec<StateCommand>>,
-    command: *mut ValueBox<StateCommand>,
+    mut commands: BorrowedPtr<Vec<StateCommand>>,
+    command: OwnedPtr<StateCommand>,
 ) {
     commands
         .with_mut(|commands| {
-            command.take_value().map(|command| {
+            command.with_value_ok(|command| {
                 commands.push(command);
             })
         })
@@ -61,18 +59,17 @@ pub extern "C" fn compositor_leftover_commands_add(
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn compositor_leftover_commands_drop(commands: *mut ValueBox<Vec<StateCommand>>) {
-    commands.release();
+pub extern "C" fn compositor_leftover_commands_drop(commands: OwnedPtr<Vec<StateCommand>>) {
+    drop(commands);
 }
 
 #[unsafe(no_mangle)]
 pub extern "C" fn compositor_leftover_layer_new(
-    commands: *mut ValueBox<Vec<StateCommand>>,
-) -> *mut ValueBox<Arc<dyn Layer>> {
+    commands: OwnedPtr<Vec<StateCommand>>,
+) -> OwnedPtr<Arc<dyn Layer>> {
     commands
-        .take_value()
-        .map(
-            |commands| ValueBox::new(Arc::new(LeftoverStateLayer::new(commands)) as Arc<dyn Layer>),
-        )
-        .into_raw()
+        .with_value_ok(|commands| {
+            OwnedPtr::new(Arc::new(LeftoverStateLayer::new(commands)) as Arc<dyn Layer>)
+        })
+        .or_log(OwnedPtr::null())
 }

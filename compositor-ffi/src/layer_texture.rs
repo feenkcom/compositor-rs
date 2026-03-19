@@ -1,7 +1,7 @@
 use compositor::{BorrowedTexture, Layer, Texture, TextureLayer};
 use compositor_texture::TextureDesc;
 use std::sync::Arc;
-use value_box::ValueBox;
+use value_box::OwnedPtr;
 
 #[unsafe(no_mangle)]
 pub extern "C" fn compositor_texture_layer_new_borrowed(
@@ -9,7 +9,7 @@ pub extern "C" fn compositor_texture_layer_new_borrowed(
     height: u32,
     rendering: extern "C" fn(*const TextureDesc, *const std::ffi::c_void),
     payload: *const std::ffi::c_void,
-) -> *mut ValueBox<Arc<dyn Layer>> {
+) -> OwnedPtr<Arc<dyn Layer>> {
     let rendering_fn = move |texture, payload| {
         let desc = Box::into_raw(Box::new(texture));
         rendering(desc, payload);
@@ -18,7 +18,7 @@ pub extern "C" fn compositor_texture_layer_new_borrowed(
         };
     };
 
-    ValueBox::new(Arc::new(TextureLayer::new(
+    OwnedPtr::new(Arc::new(TextureLayer::new(
         width,
         height,
         Texture::Borrowed(BorrowedTexture {
@@ -26,5 +26,4 @@ pub extern "C" fn compositor_texture_layer_new_borrowed(
             payload,
         }),
     )) as Arc<dyn Layer>)
-    .into_raw()
 }

@@ -1,22 +1,22 @@
 [package]
 name = "compositor-skia"
-version = "2.3.0"
-edition = "2021"
+version = "2.4.0"
+edition.workspace = true
 
 [dependencies]
-compositor = { path = "../compositor" }
-compositor-texture = { path = "../compositor-texture" }
-compositor-skia-platform = { path = "../compositor-skia-platform" }
-log = "0.4"
-cfg-if = "1.0"
-anyhow = "1.0"
-lazy_static = "1.4"
-fps_counter = "3.0"
-phlow = { version = "1", optional = true }
-phlow-extensions = { version = "1", optional = true }
+compositor.workspace = true
+compositor-texture.workspace = true
+compositor-skia-platform.workspace = true
+log.workspace = true
+cfg-if.workspace = true
+anyhow.workspace = true
+lazy_static.workspace = true
+fps_counter.workspace = true
+phlow = { workspace = true, optional = true }
+phlow-extensions = { workspace = true, optional = true }
 
 [target.'cfg(target_os="macos")'.dependencies]
-foreign-types-shared = { version = "0.3" }
+foreign-types-shared.workspace = true
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 skia-safe = { version = ">=0.90" }
@@ -25,12 +25,12 @@ skia-safe = { version = ">=0.90" }
 skia-safe = { version = ">=0.90", features = ["embed-icudtl"] }
 
 [dev-dependencies]
-winit = "0.27.5"
-env_logger = { version = "0.11", features = [ "color" ] }
-phlow = { version = "1" }
-phlow-extensions = { version = "1" }
-phlow-server = { version = "1" }
-rand = "0.8"
+winit.workspace = true
+env_logger.workspace = true
+phlow.workspace = true
+phlow-extensions.workspace = true
+phlow-server.workspace = true
+rand.workspace = true
 
 [features]
 default = [ ]
@@ -41,8 +41,8 @@ phlow = [ "dep:phlow", "dep:phlow-extensions", "compositor/phlow" ]
 
 # examples
 [target.'cfg(target_os = "macos")'.dev-dependencies]
-metal-rs = { package = "metal", version = "0.32" }
-objc = "0.2"
-cocoa = "0.26"
-core-graphics-types = "0.2"
-foreign-types-shared = "0.3"
+metal-rs.workspace = true
+objc.workspace = true
+cocoa.workspace = true
+core-graphics-types.workspace = true
+foreign-types-shared.workspace = true

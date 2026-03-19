@@ -1,28 +1,28 @@
 [package]
 name = "compositor"
-version = "2.3.0"
-edition = "2021"
+version = "2.4.0"
+edition.workspace = true
 
 [dependencies]
-compositor-texture = { path = "../compositor-texture" }
-euclid = "0.22"
-ordered-float = "5.0"
-cfg-if = "1.0"
-phlow = { version = "1", optional = true }
-phlow-extensions = { version = "1", optional = true }
-rstar = "0.12"
-parking_lot = "0.12"
-fraction = "0.15"
+compositor-texture.workspace = true
+euclid.workspace = true
+ordered-float.workspace = true
+cfg-if.workspace = true
+phlow = { workspace = true, optional = true }
+phlow-extensions = { workspace = true, optional = true }
+rstar.workspace = true
+parking_lot.workspace = true
+fraction.workspace = true
 
 [target.'cfg(target_os="macos")'.dependencies]
-metal = { version = "0.32" }
-cocoa = { version = "0.26" }
-core-graphics-types = { version = "0.2" }
-foreign-types-shared = { version = "0.3" }
+metal.workspace = true
+cocoa.workspace = true
+core-graphics-types.workspace = true
+foreign-types-shared.workspace = true
 
 [features]
 default = [  ]
 phlow = [ "dep:phlow", "dep:phlow-extensions" ]
 
 [dev-dependencies]
-phlow-server = "1"
+phlow-server.workspace = true
