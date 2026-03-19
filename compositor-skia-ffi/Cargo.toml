@@ -7,4 +7,3 @@ edition.workspace = true
 compositor.workspace = true
 compositor-skia.workspace = true
 value-box.workspace = true
-reference-box.workspace = true

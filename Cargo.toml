@@ -26,7 +26,6 @@ compositor-texture = { path = "compositor-texture" }
 # FFI helpers
 value-box = "4.1"
 string-box = "4.1"
-reference-box = "1.1"
 
 # Phlow
 phlow = "1"

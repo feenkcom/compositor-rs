@@ -6,7 +6,6 @@ edition.workspace = true
 [dependencies]
 compositor.workspace = true
 compositor-texture.workspace = true
-reference-box.workspace = true
 string-box.workspace = true
 array-box.workspace = true
 value-box.workspace = true
