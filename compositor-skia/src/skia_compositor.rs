@@ -11,14 +11,17 @@ use compositor::{
 use compositor_skia_platform::Platform;
 use skia_safe::gpu::{Budgeted, SurfaceOrigin};
 use skia_safe::surface::{BackendHandleAccess, ContentChangeMode};
-use skia_safe::{gpu, AlphaType, Canvas, Color4f, ColorType, FilterMode, Font, Image, ImageInfo, Matrix, MipmapMode, Paint, PictureRecorder, Point as SkPoint, RRect, Rect, SamplingOptions, Size, Vector};
+use skia_safe::{
+    AlphaType, Canvas, Color4f, ColorType, FilterMode, Font, Image, ImageInfo, Matrix, MipmapMode,
+    Paint, PictureRecorder, Point as SkPoint, RRect, Rect, SamplingOptions, Size, Vector, gpu,
+};
 
 use crate::renderers::PictureToRasterize;
 use crate::textures::disassemble_backend_texture;
 use crate::utils::{clip_canvas, draw_image, draw_shadow};
 use crate::{
-    as_skia_point, into_skia_matrix, to_skia_point, Cache, PictureRasterizer, ShadowRasterizer,
-    ShadowToRasterize, SkiaDrawable, SkiaPicture,
+    Cache, PictureRasterizer, ShadowRasterizer, ShadowToRasterize, SkiaDrawable, SkiaPicture,
+    as_skia_point, into_skia_matrix, to_skia_point,
 };
 
 #[derive(Debug)]
@@ -342,28 +345,41 @@ impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
                     .decompose_scale(None)
                     .unwrap_or_else(|| Size::new(1.0, 1.0));
 
-                let mut render_target = gpu::surfaces::render_target(
+                let texture_width = (layer.width() as f32 * scale.width) as i32;
+                let texture_height = (layer.height() as f32 * scale.height) as i32;
+
+                if texture_width == 0 || texture_height == 0 {
+                    return;
+                }
+
+                let image_info = ImageInfo::new_n32_premul((texture_width, texture_height), None);
+                let Some(mut render_target) = gpu::surfaces::render_target(
                     &mut context,
                     Budgeted::Yes, // let Skia manage the texture memory
-                    &ImageInfo::new_n32_premul(
-                        (
-                            (layer.width() as f32 * scale.width) as i32,
-                            (layer.height() as f32 * scale.height) as i32,
-                        ),
-                        None,
-                    ),
+                    &image_info,
                     Some(1),                // sample count
                     SurfaceOrigin::TopLeft, // texture origin
                     None,                   // optional surface properties
                     false,                  // mipmapped
                     false,
-                )
-                .unwrap();
+                ) else {
+                    error!(
+                        "Failed to create a render target with info = {:?}",
+                        image_info
+                    );
+                    return;
+                };
 
-                let backend_render_target = gpu::surfaces::get_backend_render_target(
+                let Some(backend_render_target) = gpu::surfaces::get_backend_render_target(
                     &mut render_target,
                     BackendHandleAccess::FlushRead,
-                ).expect("Host: no backend render target");
+                ) else {
+                    error!(
+                        "Failed to get a backend render target of the surface {:?}",
+                        render_target
+                    );
+                    return;
+                };
 
                 let backend_texture = gpu::surfaces::get_backend_texture(
                     &mut render_target,
