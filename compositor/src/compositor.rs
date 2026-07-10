@@ -1,6 +1,7 @@
 use crate::{
-    ClipLayer, DynamicOffsetLayer, ExplicitLayer, Layer, LeftoverStateLayer, OffsetLayer,
-    OpacityLayer, PictureLayer, ShadowLayer, TextureLayer, TiledLayer, TransformationLayer,
+    ClipLayer, DynamicOffsetLayer, ExplicitLayer, FilterBelowLayer, Layer, LeftoverStateLayer,
+    OffsetLayer, OpacityLayer, PictureLayer, ShadowLayer, TextureLayer, TiledLayer,
+    TransformationLayer,
 };
 use std::fmt::Debug;
 use std::sync::Arc;
@@ -12,6 +13,7 @@ pub trait Compositor: Debug {
     fn compose_dynamic_offset(&mut self, layer: &DynamicOffsetLayer);
     fn compose_opacity(&mut self, layer: &OpacityLayer);
     fn compose_shadow(&mut self, layer: &ShadowLayer);
+    fn compose_filter_below(&mut self, layer: &FilterBelowLayer);
     fn compose_transformation(&mut self, layer: &TransformationLayer);
     fn compose_picture(&mut self, layer: &PictureLayer);
     fn compose_leftover(&mut self, layer: &LeftoverStateLayer);

@@ -3,9 +3,11 @@
 #[macro_use]
 extern crate cfg_if;
 
+pub use filter::*;
 pub use geometry::*;
 pub use layer::*;
 pub use layer_clip::*;
+pub use layer_filter_below::*;
 pub use layer_leftover::*;
 pub use layer_offset::*;
 pub use layer_offset_dynamic::*;
@@ -19,9 +21,11 @@ pub use matrix::*;
 pub use picture::*;
 pub use shadow::*;
 
+mod filter;
 mod geometry;
 mod layer;
 mod layer_clip;
+mod layer_filter_below;
 mod layer_leftover;
 mod layer_offset;
 mod layer_offset_dynamic;
