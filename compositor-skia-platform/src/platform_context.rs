@@ -95,34 +95,34 @@ impl PlatformContext {
 
     #[cfg(all(feature = "raw-window-handle-5", not(feature = "raw-window-handle-6")))]
     pub fn for_window_handle<
-        W: raw_window_handle_5::HasRawDisplayHandle + raw_window_handle_5::HasRawWindowHandle,
+        W: raw_window_handle_5::HasRawDisplayHandle + raw_window_handle_5::HasRawWindowHandle + ?Sized,
     >(
         w: &W,
         width: u32,
         height: u32,
-    ) -> Result<Self> {
+    ) -> anyhow::Result<Self> {
         unsafe { Self::for_window_handle_5(w, width, height) }
     }
 
     #[cfg(all(feature = "raw-window-handle-6", not(feature = "raw-window-handle-5")))]
     pub fn for_window_handle<
-        W: raw_window_handle_6::HasDisplayHandle + raw_window_handle_6::HasWindowHandle,
+        W: raw_window_handle_6::HasDisplayHandle + raw_window_handle_6::HasWindowHandle + ?Sized,
     >(
         w: &W,
         width: u32,
         height: u32,
-    ) -> Result<Self> {
+    ) -> anyhow::Result<Self> {
         unsafe { Self::for_window_handle_6(w, width, height) }
     }
 
     #[cfg(feature = "raw-window-handle-5")]
     pub unsafe fn for_window_handle_5<
-        W: raw_window_handle_5::HasRawDisplayHandle + raw_window_handle_5::HasRawWindowHandle,
+        W: raw_window_handle_5::HasRawDisplayHandle + raw_window_handle_5::HasRawWindowHandle + ?Sized,
     >(
         w: &W,
         width: u32,
         height: u32,
-    ) -> Result<Self> {
+    ) -> anyhow::Result<Self> {
         use raw_window_handle_5::RawWindowHandle;
 
         let window_handle = w.raw_window_handle();
@@ -137,12 +137,12 @@ impl PlatformContext {
 
     #[cfg(feature = "raw-window-handle-6")]
     pub unsafe fn for_window_handle_6<
-        W: raw_window_handle_6::HasDisplayHandle + raw_window_handle_6::HasWindowHandle,
+        W: raw_window_handle_6::HasDisplayHandle + raw_window_handle_6::HasWindowHandle + ?Sized,
     >(
         w: &W,
         width: u32,
         height: u32,
-    ) -> Result<Self> {
+    ) -> anyhow::Result<Self> {
         use raw_window_handle_6::RawWindowHandle;
 
         let window_handle = w
