@@ -1,7 +1,7 @@
 mod driver;
 
 use compositor::{Geometry, Layer, Point, Radius, Rectangle, Shadow, ShadowLayer};
-use compositor_skia::{to_compositor_color, Cache, SkiaCompositor};
+use compositor_skia::{Cache, SkiaCompositor, to_compositor_color};
 
 fn main() {
     env_logger::init();

@@ -13,8 +13,8 @@ where
     use metal_rs::{Device, MTLPixelFormat, MetalLayer};
     use objc::{rc::autoreleasepool, runtime::YES};
 
-    use skia_safe::gpu::{mtl, BackendRenderTarget, DirectContext, SurfaceOrigin};
-    use skia_safe::{scalar, ColorType, Size, Surface};
+    use skia_safe::gpu::{BackendRenderTarget, DirectContext, SurfaceOrigin, mtl};
+    use skia_safe::{ColorType, Size, Surface, scalar};
 
     use winit::{
         dpi::LogicalSize,

@@ -2,13 +2,13 @@ use std::fmt::{Debug, Formatter};
 use std::mem;
 use std::mem::transmute;
 
-use cocoa::base::{id as cocoa_id, YES};
+use cocoa::base::{YES, id as cocoa_id};
 use core_graphics_types::geometry::CGSize;
 use foreign_types_shared::{ForeignType, ForeignTypeRef};
 use metal::{CommandQueue, Device, MTLPixelFormat, MetalDrawableRef, MetalLayer};
 use skia_safe::gpu::mtl::BackendContext;
-use skia_safe::gpu::{mtl, BackendRenderTarget, DirectContext, SurfaceOrigin};
-use skia_safe::{gpu, scalar, ColorType, ISize, Size, Surface};
+use skia_safe::gpu::{BackendRenderTarget, DirectContext, SurfaceOrigin, mtl};
+use skia_safe::{ColorType, ISize, Size, Surface, gpu, scalar};
 
 use objc::declare::ClassDecl;
 use objc::runtime::Class;
@@ -16,9 +16,9 @@ use objc::runtime::Object;
 use objc::runtime::Sel;
 use objc::*;
 use uikit_sys::{
-    id as uikit_id, CALayer, CGPoint as UIPoint, CGRect as UIRect, CGSize as UISize, ICALayer,
-    INSObject, IUIColor, IUIView, NSObject, PCALayerDelegate, UIColor, UIResponder, UIView,
-    UIView_UIViewHierarchy, UIView_UIViewRendering,
+    CALayer, CGPoint as UIPoint, CGRect as UIRect, CGSize as UISize, ICALayer, INSObject, IUIColor,
+    IUIView, NSObject, PCALayerDelegate, UIColor, UIResponder, UIView, UIView_UIViewHierarchy,
+    UIView_UIViewRendering, id as uikit_id,
 };
 
 use crate::{PlatformCompositor, PlatformContext};

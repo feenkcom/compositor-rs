@@ -25,7 +25,7 @@ pub extern "C" fn compositor_tiled_layer_new(
     OwnedPtr::new(Arc::new(TiledLayer::new(
         Point::new(camera_x, camera_y),
         Extent::new(width, height),
-        Extent::new(tile_width, tile_height)
+        Extent::new(tile_width, tile_height),
     )) as Arc<dyn Layer>)
 }
 

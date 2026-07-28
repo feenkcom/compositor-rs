@@ -6,14 +6,14 @@ use skia_safe::gpu::{
     SyncCpu,
 };
 use skia_safe::surface::BackendSurfaceAccess;
-use skia_safe::{gpu, ColorType, ISize, Surface};
-use windows::core::{Interface, Result};
+use skia_safe::{ColorType, ISize, Surface, gpu};
 use windows::Win32::Foundation::{HANDLE, HWND};
 use windows::Win32::Graphics::Direct3D::D3D_FEATURE_LEVEL_11_0;
 use windows::Win32::Graphics::Direct3D12::*;
 use windows::Win32::Graphics::Dxgi::Common::DXGI_FORMAT_R8G8B8A8_UNORM;
 use windows::Win32::Graphics::Dxgi::*;
 use windows::Win32::System::Threading::{CreateEventW, WaitForSingleObjectEx};
+use windows::core::{Interface, Result};
 
 pub const NUM_FRAMES: usize = 2;
 

@@ -7,7 +7,7 @@ use std::rc::Rc;
 use std::sync::Arc;
 
 use parking_lot::RwLock;
-use rstar::{ParentNode, RTree, RTreeObject, AABB};
+use rstar::{AABB, ParentNode, RTree, RTreeObject};
 
 use crate::{Compositor, Extent, Layer, OffsetLayer, PictureLayer, Point, Scalar};
 
@@ -707,7 +707,7 @@ mod tests {
 
 #[cfg(feature = "phlow")]
 mod extensions {
-    use phlow::{phlow, phlow_all, PhlowObject, PhlowView};
+    use phlow::{PhlowObject, PhlowView, phlow, phlow_all};
     use rstar::RTreeNode;
 
     use super::*;

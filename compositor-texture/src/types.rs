@@ -1,4 +1,3 @@
-
 #[repr(u8)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum Protected {
@@ -26,8 +25,8 @@ pub enum ColorType {
 #[macro_export]
 macro_rules! encode_skia_protected {
     ($protected:expr) => {{
-        use skia_safe::gpu::Protected as SkiaProtected;
         use compositor_texture::Protected as TextureProtected;
+        use skia_safe::gpu::Protected as SkiaProtected;
 
         match $protected {
             SkiaProtected::No => TextureProtected::No,
@@ -39,8 +38,8 @@ macro_rules! encode_skia_protected {
 #[macro_export]
 macro_rules! decode_skia_protected {
     ($protected:expr) => {{
-        use skia_safe::gpu::Protected as SkiaProtected;
         use compositor_texture::Protected as TextureProtected;
+        use skia_safe::gpu::Protected as SkiaProtected;
 
         match $protected {
             TextureProtected::No => SkiaProtected::No,
@@ -52,8 +51,8 @@ macro_rules! decode_skia_protected {
 #[macro_export]
 macro_rules! encode_skia_color_type {
     ($color_type:expr) => {{
-        use skia_safe::ColorType as SkiaColorType;
         use compositor_texture::ColorType as TextureColorType;
+        use skia_safe::ColorType as SkiaColorType;
 
         match $color_type {
             SkiaColorType::Unknown => TextureColorType::Unknown,
@@ -68,8 +67,8 @@ macro_rules! encode_skia_color_type {
 #[macro_export]
 macro_rules! decode_skia_color_type {
     ($color_type:expr) => {{
-        use skia_safe::ColorType as SkiaColorType;
         use compositor_texture::ColorType as TextureColorType;
+        use skia_safe::ColorType as SkiaColorType;
 
         match $color_type {
             TextureColorType::Unknown => SkiaColorType::Unknown,

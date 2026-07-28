@@ -57,9 +57,7 @@ pub extern "C" fn compositor_geometry_new_circle(
 
 /// Creates a new geometry from a given path consuming that path
 #[unsafe(no_mangle)]
-pub extern "C" fn compositor_geometry_new_path(
-    path: OwnedPtr<Path>,
-) -> OwnedPtr<Geometry> {
+pub extern "C" fn compositor_geometry_new_path(path: OwnedPtr<Path>) -> OwnedPtr<Geometry> {
     path.with_value_ok(|path| OwnedPtr::new(Geometry::Path(path)))
         .or_log(OwnedPtr::null())
 }

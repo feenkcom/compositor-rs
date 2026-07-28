@@ -1,9 +1,9 @@
 use crate::utils::{clip_canvas, draw_shadow};
-use crate::{as_skia_point, into_skia_matrix, to_skia_point, SkiaDrawable};
+use crate::{SkiaDrawable, as_skia_point, into_skia_matrix, to_skia_point};
 use compositor::{
     ClipLayer, Compositor, DynamicOffsetLayer, ExplicitLayer, Layer, LeftoverStateLayer,
-    OffsetLayer, OpacityLayer, PictureLayer, Shadow, ShadowLayer, StateCommandType,
-    TextureLayer, TiledLayer, TransformationLayer,
+    OffsetLayer, OpacityLayer, PictureLayer, Shadow, ShadowLayer, StateCommandType, TextureLayer,
+    TiledLayer, TransformationLayer,
 };
 use skia_safe::{Canvas, Vector};
 use std::sync::Arc;

@@ -385,15 +385,15 @@ impl Radius {
     }
 
     pub fn width(&self) -> Scalar {
-        self.0 .0
+        self.0.0
     }
 
     pub fn height(&self) -> Scalar {
-        self.0 .1
+        self.0.1
     }
 
     pub fn as_tuple_f32(&self) -> (f32, f32) {
-        (self.0 .0.into(), self.0 .1.into())
+        (self.0.0.into(), self.0.1.into())
     }
 }
 

@@ -3,7 +3,7 @@ use crate::{
     RasterizerSurfaceType, ShadowRasterizer, ShadowToRasterize,
 };
 use log::error;
-use skia_safe::{surfaces, Canvas, ImageInfo, Surface};
+use skia_safe::{Canvas, ImageInfo, Surface, surfaces};
 
 pub trait Rasterizer {
     fn rasterize_picture(

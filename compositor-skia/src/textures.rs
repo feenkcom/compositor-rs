@@ -45,11 +45,11 @@ pub fn disassemble_backend_texture(
 mod metal {
     use compositor_skia_platform::MetalPlatform;
     use compositor_texture::{
-        encode_skia_color_type, encode_skia_protected, MetalTextureDesc, Protected,
+        MetalTextureDesc, Protected, encode_skia_color_type, encode_skia_protected,
     };
     use foreign_types_shared::ForeignTypeRef;
     use skia_safe::gpu::{
-        backend_formats, backend_textures, mtl, BackendTexture, RecordingContext,
+        BackendTexture, RecordingContext, backend_formats, backend_textures, mtl,
     };
     use skia_safe::{Size, Surface};
     use std::ffi::c_void;
@@ -97,10 +97,10 @@ mod metal {
 mod opengl {
     use compositor_skia_platform::{OpenGLPlatform, Platform};
     use compositor_texture::{
-        encode_skia_color_type, encode_skia_protected, OpenGlDesc, OpenGlFramebufferDesc,
-        OpenGlTextureDesc,
+        OpenGlDesc, OpenGlFramebufferDesc, OpenGlTextureDesc, encode_skia_color_type,
+        encode_skia_protected,
     };
-    use skia_safe::gpu::{backend_textures, BackendRenderTarget, BackendTexture, RecordingContext};
+    use skia_safe::gpu::{BackendRenderTarget, BackendTexture, RecordingContext, backend_textures};
     use skia_safe::{Size, Surface};
 
     pub(crate) fn disassemble_opengl_backend_texture(

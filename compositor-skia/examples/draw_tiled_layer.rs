@@ -18,7 +18,10 @@ fn main() {
         .map(|i| {
             let mut recorder = PictureRecorder::new();
             let canvas = recorder.begin_recording(&Rect::new(0.0, 0.0, 100.0, 50.0), None);
-            let paint = Paint::new(&Color4f::new(rng.gen(), rng.gen(), rng.gen(), 1.0), None);
+            let paint = Paint::new(
+                &Color4f::new(rng.r#gen(), rng.r#gen(), rng.r#gen(), 1.0),
+                None,
+            );
             canvas.draw_rect(&Rect::new(0.0, 0.0, 100.0, 50.0), &paint);
             let picture = recorder.finish_recording_as_picture(None).unwrap();
             PictureLayer::new(Arc::new(SkiaPicture::new(picture)), false)

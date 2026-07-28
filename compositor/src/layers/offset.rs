@@ -68,7 +68,7 @@ impl Layer for OffsetLayer {
 #[cfg(feature = "phlow")]
 mod extensions {
     use super::*;
-    use phlow::{phlow, phlow_all, PhlowObject, PhlowView};
+    use phlow::{PhlowObject, PhlowView, phlow, phlow_all};
 
     #[phlow::extensions(CompositorExtensions, OffsetLayer)]
     impl OffsetLayerExtensions {

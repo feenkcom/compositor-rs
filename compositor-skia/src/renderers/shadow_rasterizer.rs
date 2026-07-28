@@ -1,4 +1,4 @@
-use crate::{as_skia_point, into_skia_rect, RasterizationStats};
+use crate::{RasterizationStats, as_skia_point, into_skia_rect};
 use compositor::Shadow;
 use log::{error, trace};
 use skia_safe::{

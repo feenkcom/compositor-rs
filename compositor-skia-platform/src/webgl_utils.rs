@@ -15,11 +15,7 @@ pub type em_webgl_context_callback =
 pub type em_callback_func = unsafe extern "C" fn();
 
 pub fn em_bool(value: bool) -> EM_BOOL {
-    if value {
-        1
-    } else {
-        0
-    }
+    if value { 1 } else { 0 }
 }
 
 pub fn get_proc_address(name: &str) -> Option<*const raw::c_void> {

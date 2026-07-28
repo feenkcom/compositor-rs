@@ -2,7 +2,7 @@
 mod extensions {
     use crate::SkiaCachelessCompositor;
     use compositor::{Compositor, Layer, TiledLayer, TiledLayerFigure};
-    use phlow::{phlow, phlow_all, PhlowBitmap, PhlowObject, PhlowView};
+    use phlow::{PhlowBitmap, PhlowObject, PhlowView, phlow, phlow_all};
     use skia_safe::{Color, Color4f, IPoint, ISize, ImageInfo, Paint, Point, Rect, Surface};
 
     use super::*;

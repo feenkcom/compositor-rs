@@ -2,7 +2,7 @@ use crate::OpenGLPlatform;
 use khronos_egl as egl;
 use skia_safe::gpu::gl::{Enum, FramebufferInfo, Interface, UInt};
 use skia_safe::gpu::{ContextOptions, DirectContext, SurfaceOrigin};
-use skia_safe::{gpu, ColorType, ISize, Surface};
+use skia_safe::{ColorType, ISize, Surface, gpu};
 use std::error::Error;
 use std::ffi::c_void;
 use std::fmt::{Debug, Formatter};

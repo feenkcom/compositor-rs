@@ -1,20 +1,20 @@
-use anyhow::{anyhow, bail, Result};
+use anyhow::{Result, anyhow, bail};
 use mozangle::egl::ffi::*;
 use mozangle::egl::{ffi, get_proc_address};
 use skia_safe::gpu::gl::{Format, FramebufferInfo, Interface};
 use skia_safe::gpu::{
     BackendRenderTarget, ContextOptions, DirectContext, RecordingContext, SurfaceOrigin,
 };
-use skia_safe::{gpu, ColorType, ISize, Surface};
-use std::ffi::{c_void, CString};
+use skia_safe::{ColorType, ISize, Surface, gpu};
+use std::ffi::{CString, c_void};
 use std::fmt::{Debug, Formatter};
 use std::mem::transmute;
 use std::os::raw;
 use windows::Win32::Foundation::HWND;
 use windows::Win32::Graphics::Gdi::GetDC;
 
-use crate::angle_utils::*;
 use crate::OpenGLPlatform;
+use crate::angle_utils::*;
 
 pub const SAMPLE_COUNT: u32 = 1;
 

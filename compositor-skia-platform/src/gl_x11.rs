@@ -1,5 +1,5 @@
 use std::error::Error;
-use std::ffi::{c_void, CString};
+use std::ffi::{CString, c_void};
 use std::fmt::{Display, Formatter};
 use std::os::raw::{self, c_int, c_ulong};
 use std::ptr::{slice_from_raw_parts, slice_from_raw_parts_mut};
@@ -7,7 +7,7 @@ use std::sync::Mutex;
 
 use skia_safe::gpu::gl::{Enum, FramebufferInfo, Interface, UInt};
 use skia_safe::gpu::{BackendRenderTarget, ContextOptions, DirectContext, SurfaceOrigin};
-use skia_safe::{gpu, ColorType, ISize, Surface};
+use skia_safe::{ColorType, ISize, Surface, gpu};
 
 use x11::glx;
 use x11::glx::{GLXContext, GLXFBConfig};

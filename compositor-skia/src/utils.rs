@@ -1,13 +1,13 @@
 use crate::{
-    as_skia_point, into_skia_rect, into_skia_rrect, to_skia_point, PictureToRasterize, SkiaPath,
+    PictureToRasterize, SkiaPath, as_skia_point, into_skia_rect, into_skia_rrect, to_skia_point,
 };
 use compositor::{Geometry, Rectangle, Shadow};
 use log::trace;
-use skia_safe::image_filters::{drop_shadow_only, CropRect};
+use skia_safe::image_filters::{CropRect, drop_shadow_only};
 use skia_safe::paint::Style;
 use skia_safe::{
-    scalar, BlendMode, Canvas, ClipOp, Color, Image, Matrix, Paint, PathDirection, Point, Vector,
-    M44,
+    BlendMode, Canvas, ClipOp, Color, Image, M44, Matrix, Paint, PathDirection, Point, Vector,
+    scalar,
 };
 
 pub(crate) fn clip_canvas(

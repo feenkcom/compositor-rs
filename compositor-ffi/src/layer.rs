@@ -29,9 +29,7 @@ pub extern "C" fn compositor_layer_with_layers(
     layers: OwnedPtr<Vec<Arc<dyn Layer>>>,
 ) -> OwnedPtr<Arc<dyn Layer>> {
     layer
-        .with_ref(|layer| {
-            layers.with_value_ok(|layers| OwnedPtr::new(layer.with_layers(layers)))
-        })
+        .with_ref(|layer| layers.with_value_ok(|layers| OwnedPtr::new(layer.with_layers(layers))))
         .or_log(OwnedPtr::null())
 }
 

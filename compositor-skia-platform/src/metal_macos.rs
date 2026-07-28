@@ -1,13 +1,13 @@
 use std::mem;
 
 use cocoa::appkit::NSView;
-use cocoa::base::{id as cocoa_id, YES};
+use cocoa::base::{YES, id as cocoa_id};
 use core_graphics_types::geometry::CGSize;
 use foreign_types_shared::{ForeignType, ForeignTypeRef};
 use metal::{CommandQueue, Device, MTLPixelFormat, MetalDrawableRef, MetalLayer};
 use skia_safe::gpu::mtl::BackendContext;
-use skia_safe::gpu::{mtl, DirectContext, SurfaceOrigin};
-use skia_safe::{gpu, scalar, ColorType, ISize, Size, Surface};
+use skia_safe::gpu::{DirectContext, SurfaceOrigin, mtl};
+use skia_safe::{ColorType, ISize, Size, Surface, gpu, scalar};
 
 #[allow(dead_code)]
 #[derive(Debug, Clone)]

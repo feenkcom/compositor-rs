@@ -15,9 +15,7 @@ pub extern "C" fn compositor_picture_layer_new(
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn compositor_picture_layer_needs_cache(
-    layer: BorrowedPtr<Arc<dyn Layer>>,
-) -> bool {
+pub extern "C" fn compositor_picture_layer_needs_cache(layer: BorrowedPtr<Arc<dyn Layer>>) -> bool {
     layer
         .with_ref_ok(|layer| {
             let picture_layer = layer

@@ -3,7 +3,7 @@ mod driver;
 use compositor::{
     Geometry, Layer, Point, Radius, Rectangle, Shadow, ShadowLayer, TransformationLayer,
 };
-use compositor_skia::{into_compositor_matrix, to_compositor_color, Cache, SkiaCompositor};
+use compositor_skia::{Cache, SkiaCompositor, into_compositor_matrix, to_compositor_color};
 use skia_safe::Matrix;
 use std::sync::Arc;
 

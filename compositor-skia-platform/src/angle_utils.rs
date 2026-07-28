@@ -1,7 +1,7 @@
 use std::convert::Infallible;
 
 use crate::angle::SAMPLE_COUNT;
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use mozangle::egl::ffi::types;
 use mozangle::egl::ffi::types::EGLenum;
 use mozangle::egl::ffi::*;
@@ -64,7 +64,9 @@ pub enum AngleError {
     FailedToDestroySurface(types::EGLDisplay, types::EGLSurface, #[source] EGLError),
     #[error("Failed to swap buffers of surface {1:?} and display {0:?}")]
     FailedToSwapBuffers(types::EGLDisplay, types::EGLSurface, #[source] EGLError),
-    #[error("Failed to make context {3:?} current with draw surface {1:?} and read surface {2:?} of display {0:?}")]
+    #[error(
+        "Failed to make context {3:?} current with draw surface {1:?} and read surface {2:?} of display {0:?}"
+    )]
     FailedToMakeCurrent(
         types::EGLDisplay,
         types::EGLSurface,
@@ -84,9 +86,13 @@ unsafe impl Sync for AngleError {}
 pub enum EGLError {
     #[error("Expected an error, but it was a success")]
     SUCCESS = SUCCESS,
-    #[error("EGL is not initialized, or could not be initialized, for the specified EGL display connection.")]
+    #[error(
+        "EGL is not initialized, or could not be initialized, for the specified EGL display connection."
+    )]
     NOT_INITIALIZED = NOT_INITIALIZED,
-    #[error("EGL cannot access a requested resource (for example a context is bound in another thread).")]
+    #[error(
+        "EGL cannot access a requested resource (for example a context is bound in another thread)."
+    )]
     BAD_ACCESS = BAD_ACCESS,
     #[error("EGL failed to allocate resources for the requested operation.")]
     BAD_ALLOC = BAD_ALLOC,
@@ -96,13 +102,19 @@ pub enum EGLError {
     BAD_CONTEXT = BAD_CONTEXT,
     #[error("An EGLConfig argument does not name a valid EGL frame buffer configuration.")]
     BAD_CONFIG = BAD_CONFIG,
-    #[error("The current surface of the calling thread is a window, pixel buffer or pixmap that is no longer valid.")]
+    #[error(
+        "The current surface of the calling thread is a window, pixel buffer or pixmap that is no longer valid."
+    )]
     BAD_CURRENT_SURFACE = BAD_CURRENT_SURFACE,
     #[error("An EGLDisplay argument does not name a valid EGL display connection.")]
     BAD_DISPLAY = BAD_DISPLAY,
-    #[error("An EGLSurface argument does not name a valid surface (window, pixel buffer or pixmap) configured for GL rendering.")]
+    #[error(
+        "An EGLSurface argument does not name a valid surface (window, pixel buffer or pixmap) configured for GL rendering."
+    )]
     BAD_SURFACE = BAD_SURFACE,
-    #[error("Arguments are inconsistent (for example, a valid context requires buffers not supplied by a valid surface).")]
+    #[error(
+        "Arguments are inconsistent (for example, a valid context requires buffers not supplied by a valid surface)."
+    )]
     BAD_MATCH = BAD_MATCH,
     #[error("One or more argument values are invalid.")]
     BAD_PARAMETER = BAD_PARAMETER,
@@ -110,7 +122,9 @@ pub enum EGLError {
     BAD_NATIVE_PIXMAP = BAD_NATIVE_PIXMAP,
     #[error("A NativeWindowType argument does not refer to a valid native window.")]
     BAD_NATIVE_WINDOW = BAD_NATIVE_WINDOW,
-    #[error("A power management event has occurred. The application must destroy all contexts and reinitialise OpenGL ES state and objects to continue rendering.")]
+    #[error(
+        "A power management event has occurred. The application must destroy all contexts and reinitialise OpenGL ES state and objects to continue rendering."
+    )]
     CONTEXT_LOST = CONTEXT_LOST,
     #[error("Unknown EGL Error: {0}")]
     #[num_enum(catch_all)]

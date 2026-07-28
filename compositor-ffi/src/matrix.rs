@@ -4,9 +4,7 @@ use value_box::{BorrowedPtr, OwnedPtr, ReturnBoxerResult};
 use compositor::{Matrix, Scalar};
 
 #[unsafe(no_mangle)]
-pub extern "C" fn compositor_matrix_new(
-    values: BorrowedPtr<ArrayBox<f32>>,
-) -> OwnedPtr<Matrix> {
+pub extern "C" fn compositor_matrix_new(values: BorrowedPtr<ArrayBox<f32>>) -> OwnedPtr<Matrix> {
     values
         .with_ref_ok(|values| {
             let buffer: &[f32; 9] = values.to_slice().try_into().unwrap();
