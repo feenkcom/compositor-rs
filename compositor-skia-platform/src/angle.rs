@@ -5,13 +5,18 @@ use skia_safe::gpu::gl::{Format, FramebufferInfo, Interface};
 use skia_safe::gpu::{
     BackendRenderTarget, ContextOptions, DirectContext, RecordingContext, SurfaceOrigin,
 };
-use skia_safe::{ColorType, ISize, Surface, gpu};
+use skia_safe::{ColorType, ColorSpace, ISize, Surface, gpu};
 use std::ffi::{CString, c_void};
 use std::fmt::{Debug, Formatter};
 use std::mem::transmute;
 use std::os::raw;
-use windows::Win32::Foundation::HWND;
-use windows::Win32::Graphics::Gdi::GetDC;
+use windows::core::{Error, PCWSTR, PWSTR, BOOL};
+use windows::Win32::Foundation::{HWND, MAX_PATH};
+use windows::Win32::Graphics::Gdi::{
+    GetDC,CreateDCW, DeleteDC, GetMonitorInfoW, MonitorFromWindow,
+    MONITORINFOEXW, MONITOR_DEFAULTTONEAREST, HDC
+};
+use windows::Win32::UI::ColorSystem::GetICMProfileW;
 
 use crate::OpenGLPlatform;
 use crate::angle_utils::*;
@@ -34,6 +39,54 @@ pub unsafe extern "C" fn get_proc_address_ffi(name: *const raw::c_char) -> *cons
 
 pub unsafe extern "C" fn get_current_context_ffi() -> *const c_void {
     GetCurrentContext()
+}
+
+fn get_monitor_icc_profile(hwnd: HWND) -> windows::core::Result<Option<Vec<u8>>> {
+    unsafe {
+        let hmonitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+        let mut monitor_info: MONITORINFOEXW = std::mem::zeroed();
+        monitor_info.monitorInfo.cbSize = std::mem::size_of::<MONITORINFOEXW>() as u32;
+
+        let ok = GetMonitorInfoW(hmonitor, &mut monitor_info.monitorInfo as *mut _);
+        if !ok.as_bool() {
+            return Err(Error::from_thread());
+        }
+
+        let monitor_device_context = CreateDCW(
+            PCWSTR::null(),
+            PCWSTR(monitor_info.szDevice.as_ptr()),
+            PCWSTR::null(),
+            None,
+        );
+        
+        if monitor_device_context.is_invalid() {
+            return Err(Error::from_thread());
+        }
+
+        // Ask GDI for the ICC profile path bound to this device context
+        let mut buffer: [u16; MAX_PATH as usize] = [0; MAX_PATH as usize];
+        let mut buffer_size: u32 = buffer.len() as u32;
+
+        let profile_path_result = GetICMProfileW(monitor_device_context, &mut buffer_size, Some(PWSTR(buffer.as_mut_ptr())));
+
+        DeleteDC(monitor_device_context);
+
+        if !profile_path_result.as_bool() {
+            return Err(Error::from_thread());
+        }
+
+        let profile_path = String::from_utf16_lossy(&buffer[..buffer_size as usize])
+            .trim_end_matches('\0')
+            .to_string();
+
+        if profile_path.is_empty() {
+            return Ok(None);
+        }
+
+        let profile_bytes = std::fs::read(&profile_path)?;
+
+        Ok(Some(profile_bytes))
+    }
 }
 
 impl AngleContext {
@@ -209,6 +262,7 @@ pub struct AngleWindowContext {
     backend_context: Interface,
     direct_context: DirectContext,
     skia_surface: Option<Surface>,
+    color_space: Option<ColorSpace>,
 }
 
 impl AngleWindowContext {
@@ -227,6 +281,13 @@ impl AngleWindowContext {
         let direct_context = gpu::direct_contexts::make_gl(interface.clone(), &context_options)
             .ok_or_else(|| anyhow!("Failed to create direct context"))?;
 
+        let icc_profile = get_monitor_icc_profile(window);
+        let color_space = 
+            match icc_profile {
+                Ok(Some(profile)) => ColorSpace::new_icc(profile.as_slice()),
+                _ => None
+            };
+
         Ok(Self {
             egl_display,
             egl_config,
@@ -235,6 +296,7 @@ impl AngleWindowContext {
             backend_context: interface,
             direct_context,
             skia_surface: None,
+            color_space,
         })
     }
 
@@ -243,7 +305,7 @@ impl AngleWindowContext {
             "About to create a skia surface of size {}x{}",
             width, height
         );
-        let skia_surface = create_skia_surface(&mut self.direct_context, width, height)?;
+        let skia_surface = create_skia_surface(&mut self.direct_context, width, height, self.color_space.clone())?;
         self.skia_surface = Some(skia_surface);
         Ok(())
     }
@@ -297,6 +359,7 @@ fn create_skia_surface(
     recording_context: &mut RecordingContext,
     width: i32,
     height: i32,
+    color_space: Option<ColorSpace>
 ) -> Result<Surface> {
     let framebuffer = get_framebuffer_binding();
 
@@ -318,7 +381,7 @@ fn create_skia_surface(
         &backend_render_target,
         SurfaceOrigin::BottomLeft,
         ColorType::RGBA8888,
-        None,
+        color_space,
         None,
     )
     .ok_or_else(|| anyhow!("Failed to create skia surface"))
