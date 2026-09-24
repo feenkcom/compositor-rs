@@ -1,6 +1,5 @@
 pub use clip::ClipLayer;
 pub use explicit::ExplicitLayer;
-pub use filter_below::{BlurFilter, Filter, FilterBelowLayer};
 pub use layer::Layer;
 pub use leftover_state::{LeftoverStateLayer, StateCommand, StateCommandType};
 pub use offset::OffsetLayer;
@@ -14,7 +13,6 @@ pub use transformation::TransformationLayer;
 
 mod clip;
 mod explicit;
-mod filter_below;
 mod layer;
 mod leftover_state;
 mod offset;
