@@ -4,9 +4,9 @@ use std::sync::Arc;
 use log::error;
 
 use compositor::{
-    ClipLayer, Compositor, DynamicOffsetLayer, ExplicitLayer, Extent, Layer, LeftoverStateLayer,
-    OffsetLayer, OpacityLayer, Picture, PictureLayer, Point, Shadow, ShadowLayer, StateCommandType,
-    Texture, TextureLayer, TiledLayer, TransformationLayer,
+    ClipLayer, Compositor, DynamicOffsetLayer, ExplicitLayer, Extent, FilterBelowLayer, Layer,
+    LeftoverStateLayer, OffsetLayer, OpacityLayer, Picture, PictureLayer, Point, Shadow,
+    ShadowLayer, StateCommandType, Texture, TextureLayer, TiledLayer, TransformationLayer,
 };
 use compositor_skia_platform::Platform;
 use skia_safe::gpu::{Budgeted, SurfaceOrigin};
@@ -18,7 +18,7 @@ use skia_safe::{
 
 use crate::renderers::PictureToRasterize;
 use crate::textures::disassemble_backend_texture;
-use crate::utils::{clip_canvas, draw_image, draw_shadow};
+use crate::utils::{clip_canvas, draw_image, draw_shadow, into_skia_image_filter};
 use crate::{
     Cache, PictureRasterizer, ShadowRasterizer, ShadowToRasterize, SkiaDrawable, SkiaPicture,
     as_skia_point, into_skia_matrix, to_skia_point,
@@ -91,6 +91,34 @@ impl<'canvas, 'cache> Compositor for SkiaCompositor<'canvas, 'cache> {
         }
 
         self.alpha = previous_alpha;
+    }
+
+    fn compose_filter_below(&mut self, layer: &FilterBelowLayer) {
+        self.canvas.save();
+        clip_canvas(self.canvas, layer.geometry(), Some(layer.offset()));
+
+        let previous_alpha = self.alpha.take();
+        let opacity_paint = previous_alpha.map(|alpha| {
+            let mut paint = Paint::default();
+            paint.set_alpha_f(alpha);
+            paint
+        });
+        let filter = into_skia_image_filter(layer.filter());
+        let mut save_layer_rec = skia_safe::canvas::SaveLayerRec::default().backdrop(&filter);
+        if let Some(paint) = opacity_paint.as_ref() {
+            save_layer_rec = save_layer_rec.paint(paint);
+        }
+
+        self.canvas.save_layer(&save_layer_rec);
+        self.canvas.translate(to_skia_point(*layer.offset()));
+
+        for layer in layer.layers() {
+            layer.compose(self);
+        }
+
+        self.canvas.restore();
+        self.alpha = previous_alpha;
+        self.canvas.restore();
     }
 
     fn compose_shadow(&mut self, layer: &ShadowLayer) {

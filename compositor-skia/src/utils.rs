@@ -162,3 +162,13 @@ pub(crate) fn draw_geometry(canvas: &Canvas, geometry: &Geometry, paint: &Paint)
         }
     }
 }
+
+pub(crate) fn into_skia_image_filter(filter: &compositor::Filter) -> skia_safe::ImageFilter {
+    match filter {
+        compositor::Filter::Blur(blur) => {
+            let sigma = blur.sigma().as_tuple_f32();
+            skia_safe::image_filters::blur(sigma, None, None, None)
+                .expect("Failed to create Skia blur image filter")
+        }
+    }
+}

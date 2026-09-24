@@ -36,6 +36,8 @@ impl MetalContext {
             let layer = MetalLayer::new();
             layer.set_device(&device);
             layer.set_pixel_format(MTLPixelFormat::BGRA8Unorm);
+            // Filters below sample the existing drawable contents through Skia.
+            layer.set_framebuffer_only(false);
             layer.set_presents_with_transaction(false);
             if let Some(size) = size {
                 layer.set_drawable_size(size);
