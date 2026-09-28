@@ -76,6 +76,9 @@ impl PlatformCompositor {
             .clone();
 
         if let Some(layer) = current_layer {
+            #[cfg(target_os = "macos")]
+            self.context
+                .set_requires_surface_read(layer.requires_surface_read());
             self.context.with_surface(|surface| {
                 let canvas = surface.canvas();
                 canvas.clear(Color::WHITE);
@@ -109,6 +112,9 @@ impl PlatformCompositor {
             .clone();
 
         if let Some(layer) = current_layer {
+            #[cfg(target_os = "macos")]
+            self.context
+                .set_requires_surface_read(layer.requires_surface_read());
             self.context.with_surface(|surface| {
                 let canvas = surface.canvas();
                 canvas.clear(Color::WHITE);

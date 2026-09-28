@@ -105,9 +105,44 @@ impl MetalContext {
         }
     }
 
+    /// Configure the next drawable before acquiring it with `with_surface`.
+    pub fn set_requires_surface_read(&mut self, required: bool) {
+        set_requires_surface_read(&self.layer, required);
+    }
+
     pub fn commit(&self, drawable: &MetalDrawableRef) {
         let command_buffer = self.platform.queue.new_command_buffer();
         command_buffer.present_drawable(drawable);
         command_buffer.commit()
+    }
+}
+
+fn set_requires_surface_read(layer: &MetalLayer, required: bool) {
+    let framebuffer_only = !required;
+    if layer.framebuffer_only() != framebuffer_only {
+        layer.set_framebuffer_only(framebuffer_only);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn framebuffer_only_tracks_surface_reads_in_both_directions() {
+        let layer = MetalLayer::new();
+        let other_layer = MetalLayer::new();
+        assert!(
+            layer.framebuffer_only(),
+            "ordinary frames retain Metal's default"
+        );
+        for required in [false, false, true, true, false, true, false] {
+            set_requires_surface_read(&layer, required);
+            assert_eq!(layer.framebuffer_only(), !required);
+            assert!(
+                other_layer.framebuffer_only(),
+                "other windows stay optimised"
+            );
+        }
     }
 }
