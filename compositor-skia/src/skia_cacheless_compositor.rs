@@ -1,16 +1,17 @@
-use crate::utils::{clip_canvas, draw_shadow};
+use crate::utils::{clip_canvas, draw_shadow, into_skia_image_filter};
 use crate::{SkiaDrawable, as_skia_point, into_skia_matrix, to_skia_point};
 use compositor::{
-    ClipLayer, Compositor, DynamicOffsetLayer, ExplicitLayer, Layer, LeftoverStateLayer,
-    OffsetLayer, OpacityLayer, PictureLayer, Shadow, ShadowLayer, StateCommandType, TextureLayer,
-    TiledLayer, TransformationLayer,
+    ClipLayer, Compositor, DynamicOffsetLayer, ExplicitLayer, FilterBelowLayer, Layer,
+    LeftoverStateLayer, OffsetLayer, OpacityLayer, PictureLayer, Shadow, ShadowLayer,
+    StateCommandType, TextureLayer, TiledLayer, TransformationLayer,
 };
-use skia_safe::{Canvas, Vector};
+use skia_safe::{Canvas, Paint, Vector};
 use std::sync::Arc;
 
 #[derive(Debug)]
 pub struct SkiaCachelessCompositor<'canvas> {
     canvas: &'canvas Canvas,
+    alpha: Option<f32>,
 }
 
 impl<'canvas> Compositor for SkiaCachelessCompositor<'canvas> {
@@ -57,7 +58,45 @@ impl<'canvas> Compositor for SkiaCachelessCompositor<'canvas> {
     }
 
     fn compose_opacity(&mut self, layer: &OpacityLayer) {
-        todo!()
+        let previous_alpha = self.alpha;
+        let new_alpha = previous_alpha
+            .map(|alpha| alpha * layer.alpha())
+            .unwrap_or_else(|| layer.alpha());
+        self.alpha = Some(new_alpha);
+
+        for layer in layer.layers() {
+            layer.compose(self);
+        }
+
+        self.alpha = previous_alpha;
+    }
+
+    fn compose_filter_below(&mut self, layer: &FilterBelowLayer) {
+        self.canvas.save();
+        clip_canvas(self.canvas, layer.geometry(), Some(layer.offset()));
+
+        let previous_alpha = self.alpha.take();
+        let opacity_paint = previous_alpha.map(|alpha| {
+            let mut paint = Paint::default();
+            paint.set_alpha_f(alpha);
+            paint
+        });
+        let filter = into_skia_image_filter(layer.filter());
+        let mut save_layer_rec = skia_safe::canvas::SaveLayerRec::default().backdrop(&filter);
+        if let Some(paint) = opacity_paint.as_ref() {
+            save_layer_rec = save_layer_rec.paint(paint);
+        }
+
+        self.canvas.save_layer(&save_layer_rec);
+        self.canvas.translate(to_skia_point(*layer.offset()));
+
+        for layer in layer.layers() {
+            layer.compose(self);
+        }
+
+        self.canvas.restore();
+        self.alpha = previous_alpha;
+        self.canvas.restore();
     }
 
     fn compose_shadow(&mut self, layer: &ShadowLayer) {
@@ -86,7 +125,8 @@ impl<'canvas> Compositor for SkiaCachelessCompositor<'canvas> {
             .downcast_ref::<skia_safe::Picture>()
             .expect("Picture is not Skia Picture!");
 
-        self.canvas.draw_picture(picture, None, None);
+        self.canvas
+            .draw_picture(picture, None, self.create_layer_paint().as_ref());
     }
 
     fn compose_leftover(&mut self, layer: &LeftoverStateLayer) {
@@ -146,7 +186,10 @@ impl<'canvas> Compositor for SkiaCachelessCompositor<'canvas> {
 
 impl<'canvas> SkiaCachelessCompositor<'canvas> {
     pub fn new(canvas: &'canvas Canvas) -> Self {
-        Self { canvas }
+        Self {
+            canvas,
+            alpha: None,
+        }
     }
 
     /// Draws a given shadow directly on the canvas avoiding caches and rasterization
@@ -155,7 +198,15 @@ impl<'canvas> SkiaCachelessCompositor<'canvas> {
             self.canvas,
             shadow,
             as_skia_point(shadow.offset()).clone(),
-            None,
+            self.alpha,
         );
+    }
+
+    fn create_layer_paint(&self) -> Option<Paint> {
+        self.alpha.map(|alpha| {
+            let mut paint = Paint::default();
+            paint.set_alpha_f(alpha);
+            paint
+        })
     }
 }

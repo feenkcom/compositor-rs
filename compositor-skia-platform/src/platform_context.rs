@@ -21,6 +21,14 @@ pub enum PlatformContext {
 }
 
 impl PlatformContext {
+    /// Configure surface reads before acquiring the next drawable.
+    #[cfg(target_os = "macos")]
+    pub fn set_requires_surface_read(&mut self, required: bool) {
+        if let Self::Metal(context) = self {
+            context.set_requires_surface_read(required);
+        }
+    }
+
     pub fn platform(&self) -> Option<crate::Platform> {
         match self {
             #[cfg(target_os = "macos")]
